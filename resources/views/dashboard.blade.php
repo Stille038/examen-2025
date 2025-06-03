@@ -28,7 +28,16 @@
 
 </section>
 
-<p>Studentnummer: {{ $studentnummer }}</p>
+@foreach ($studenten as $student)
+    <div class="mb-4">
+        <p><strong>{{ $student->studentnummer }}</strong></p>
+        <p>Aanwezigheid: {{ $student->aanwezigheid }}</p>
+        <p>Rooster: {{ $student->rooster }}</p>
+        <p>Week: {{ $student->week }}</p>
+        <p>Jaar: {{ $student->jaar }}</p>
+    </div>
+@endforeach
+
 
 
 <section class="py-12 ">
