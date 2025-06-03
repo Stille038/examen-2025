@@ -1,0 +1,1 @@
+<img src="{{ asset('Images/smyrna-logo.png') }}" class="logo" alt="Logo" style="width:110px; height:100px;">
