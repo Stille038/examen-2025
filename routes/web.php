@@ -7,7 +7,6 @@ use App\Models\Aanwezigheid;
 
 Route::get('/aanwezigheden', [AanwezigheidController::class, 'index']);
 
-// ✅ Dashboard met alle studenten uit de database
 Route::get('/', function () {
     $studenten = Aanwezigheid::all(); // haal alle studentgegevens op
     return view('dashboard', compact('studenten'));
