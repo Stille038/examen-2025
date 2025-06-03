@@ -28,15 +28,21 @@
 
 </section>
 
-@foreach ($studenten as $student)
-    <div class="mb-4">
-        <p><strong>{{ $student->studentnummer }}</strong></p>
-        <p>Aanwezigheid: {{ $student->aanwezigheid }}</p>
-        <p>Rooster: {{ $student->rooster }}</p>
-        <p>Week: {{ $student->week }}</p>
-        <p>Jaar: {{ $student->jaar }}</p>
-    </div>
-@endforeach
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 ">
+    @foreach ($studenten as $student)
+        <div class="bg-white shadow-md rounded-xl p-6 border border-gray-200 hover:shadow-lg transition">
+            <h2 class="text-xl font-semibold text-indigo-600 mb-2">
+                {{ $student->studentnummer }}
+            </h2>
+            <ul class="text-gray-700 space-y-1text-sm">
+                <li><span class="font-medium text-gray-900">Aanwezigheid:</span> {{ $student->aanwezigheid }}</li>
+                <li><span class="font-medium text-gray-900">Rooster:</span> {{ $student->rooster }}</li>
+                <li><span class="font-medium text-gray-900">Week:</span> {{ $student->week }}</li>
+                <li><span class="font-medium text-gray-900">Jaar:</span> {{ $student->jaar }}</li>
+            </ul>
+        </div>
+    @endforeach
+</div>
 
 
 
