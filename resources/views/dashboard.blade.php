@@ -28,7 +28,7 @@
 
 </section>
 
-
+<p>Studentnummer: {{ $studentnummer }}</p>
 
 
 <section class="py-12 ">
