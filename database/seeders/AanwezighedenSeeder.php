@@ -23,7 +23,7 @@ class AanwezighedenSeeder extends Seeder
         ];
 
         foreach ($data as $record) {
-            Aanwezigheid::create($record);
+            Aanwezigheid::create($record); // hier boven is dummy content dat foreach loopt het doorheen en zet dat in tabel in db 
         }
     }
 }

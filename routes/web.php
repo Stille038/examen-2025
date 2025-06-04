@@ -4,6 +4,7 @@ use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AanwezigheidController;
 use App\Models\Aanwezigheid;
+use App\Http\Controllers\ExcelUploadController;
 
 Route::get('/aanwezigheden', [AanwezigheidController::class, 'index']);
 
@@ -36,5 +37,6 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
+Route::post('/upload-excel', [ExcelUploadController::class, 'store'])->name('excel.upload');
 
 require __DIR__.'/auth.php';
