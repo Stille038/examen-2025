@@ -24,6 +24,10 @@ Route::get('/test', function () {
     return view('test'); 
 })->name('test');
 
+Route::get('/docent/dashboard', function () {
+    return view('docent_dashboard'); 
+})->name('docent.dashboard');
+
 Route::get('/contact', function () {
     return view('contact');
 })->name('contact');
