@@ -15,22 +15,14 @@
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
-    <body class="antialiased bg-white min-h-screen" style="font-family: 'Cormorant Garamond', serif;">
-        <div class="h-full min-h-screen flex flex flex-wrap lg:flex-nowrap">
-            <!-- Left Side -->
-            <div class="w-full lg:w-2/3 relative">
-                <!-- Achtergrondafbeelding -->
-                <div class="absolute inset-0 bg-cover bg-center" style="background-image: url('/Images/placeholder.png');"></div>
 
-            </div>
- 
-                <!-- Right Side: Registration Form -->
-                <div class="w-full lg:w-1/3 px-6 py-10 bg-white shadow-md flex flex-col items-center justify-center">
-                    <img src="{{ asset('Images/.png') }}" class="logo h-32 w-32" alt="Logo">
-        
-                    {{ $slot }}
-                </div>
+    <body class="antialiased min-h-screen bg-cover bg-center bg-gradient-to-r from-blue-500 to-purple-600" style="font-family: 'Cormorant Garamond', serif;">
+        <div class="h-full min-h-screen flex flex-wrap lg:flex-nowrap px-6 py-10">
+            <div class="w-full shadow-xl flex flex-col items-center justify-center bg-white bg-opacity-80 rounded-2xl p-6">
+            <h1 class="text-6xl font-semibold mb-32 text-center" style="font-family: 'Cormorant Garamond', serif;">AARDATA</h1>
+                {{ $slot }}
             </div>
         </div>
-    </body>     
+    </body>
+</body>  
 </html>

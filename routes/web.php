@@ -7,6 +7,12 @@ Route::get('/', function () {
     return view('dashboard');
 })->name('dashboard');
 
+Route::get('/student-dashboard', function () {
+    return view('student-dashboard'); 
+})->name('student-dashboard');
+Route::get('/individueel-student', function () {
+    return view('individueel-student'); 
+})->name('individueel-student');
 Route::get('/test1', function () {
     return view('test1'); 
 })->name('test1');
