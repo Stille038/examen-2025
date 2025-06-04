@@ -1,7 +1,7 @@
 <nav x-data="{ open: false }" class="top-0 bg-gradient text-white border-b border-gray-100 dark:border-gray-700 shadow">
     <div class="max-w-7xl mx-auto px-4 py-4 relative">
-        <h1 class="justify-start text-sm lg:text-xl font-bold flex lg:justify-center item-center items-center gap-2 text-center"> <!-- Hier straks check om heen doen, wie is ingelogd docent of student, H1 veranderen op basis daarvan en welke pagina dat is moet tekst ook veranderen -->
-            📚 Docent Dashboard – Groepsoverzicht
+        <h1 class="justify-start text-sm lg:text-xl font-bold flex lg:justify-center item-center items-center gap-2 text-center">
+            AARdata
         </h1>
         <div class="absolute pr-2 right-0 top-0 mt-2">
             <x-dropdown align="right" width="48">
