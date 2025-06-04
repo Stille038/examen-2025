@@ -9,32 +9,32 @@
         <p class="text-gray-600 mb-4">Groep: ICT-FLEX | Actieve studenten: 24</p>
 
         <!-- Filter/Navigation Tabs -->
-        <div class="flex flex-wrap gap-2 mb-6">
-            <button class="bg-blue-600 text-white px-4 py-2 rounded-md">Overzicht</button>
-            <button class="bg-gray-200 text-gray-800 px-4 py-2 rounded-md">Risicostudenten</button>
-            <button class="bg-gray-200 text-gray-800 px-4 py-2 rounded-md">Toppresteerders</button>
-            <button class="bg-gray-200 text-gray-800 px-4 py-2 rounded-md">Gestopte studenten</button>
+        <div x-data="{ tab: 'overzicht' }" class="flex flex-wrap gap-2 mb-6">
+            <button @click="tab = 'overzicht'" :class="tab === 'overzicht' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-800'" class="px-4 py-2 rounded-md transition-colors">Overzicht</button>
+            <button @click="tab = 'risico'" :class="tab === 'risico' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-800'" class="px-4 py-2 rounded-md transition-colors">Risicostudenten</button>
+            <button @click="tab = 'top'" :class="tab === 'top' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-800'" class="px-4 py-2 rounded-md transition-colors">Toppresteerders</button>
+            <button @click="tab = 'gestopt'" :class="tab === 'gestopt' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-800'" class="px-4 py-2 rounded-md transition-colors">Gestopte studenten</button>
         </div>
 
         <!-- Filter Options -->
         <div class="flex flex-wrap items-center gap-4 mb-6">
-            <div>
+            <div class="min-w-[150px] flex-1 sm:flex-none">
                 <label for="periode" class="block text-sm font-medium text-gray-700">Periode</label>
                 <select id="periode" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border border-primary focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">
                     <option>Laatste 4 weken</option>
                 </select>
             </div>
-            <div>
+            <div class="min-w-[150px] flex-1 sm:flex-none">
                 <label for="filter_op" class="block text-sm font-medium text-gray-700">Filter op %</label>
                 <select id="filter_op" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border border-primary focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">
                     <option>Alle studenten</option>
                 </select>
             </div>
-            <div class="flex-grow">
+            <div class="flex-grow min-w-[200px]">
                 <label for="zoek_student" class="block text-sm font-medium text-gray-700">Zoek student</label>
                 <input type="text" id="zoek_student" placeholder="Naam of studentnr..." class="mt-1 block w-full pl-3 pr-3 py-2 text-base border border-primary focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">
             </div>
-            <button class="mt-5 bg-blue-600 text-white px-4 py-2 rounded-md">Filter toepassen</button>
+            <button class="mt-5 sm:mt-0 bg-blue-600 text-white px-4 py-2 rounded-md">Filter toepassen</button>
         </div>
 
         <!-- Summary Cards -->
@@ -61,7 +61,7 @@
         <div class="bg-white shadow rounded-lg p-6">
             <h3 class="text-xl font-semibold text-gray-800 mb-4">Studenten</h3>
             <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200">
+                <table class="min-w-full divide-y divide-gray-200 text-sm">
                     <thead>
                         <tr>
                             <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Student</th>
@@ -136,5 +136,85 @@
             </div>
         </div>
     </div>
+
+    <!-- Vergelijking Groepen -->
+    @php
+        // Hier kun je later dynamisch data uit de database halen
+        $groepen = [
+            [ 'naam' => 'ICT-FLEX', 'gemiddelde' => 78, 'aantal' => 24 ],
+            [ 'naam' => 'ICT-REGULIER', 'gemiddelde' => 82, 'aantal' => 30 ],
+            [ 'naam' => 'ICT-FASTTRACK', 'gemiddelde' => 88, 'aantal' => 12 ],
+        ];
+    @endphp
+    <div class="bg-white shadow-md rounded-lg p-6 mb-8">
+        <h2 class="text-xl font-semibold text-gray-800 mb-4">Vergelijk groepsgemiddelden</h2>
+        <div class="overflow-x-auto mb-6">
+            <table class="min-w-full divide-y divide-gray-200 text-sm">
+                <thead>
+                    <tr>
+                        <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Groep</th>
+                        <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Gemiddelde</th>
+                        <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aantal studenten</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    @foreach($groepen as $groep)
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap">{{ $groep['naam'] }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap">{{ $groep['gemiddelde'] }}%</td>
+                            <td class="px-6 py-4 whitespace-nowrap">{{ $groep['aantal'] }}</td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+        <div class="flex flex-col items-center justify-center bg-gray-50 rounded-lg shadow-inner p-6 w-full md:w-2/3 mx-auto">
+            <h3 class="text-lg font-semibold text-gray-700 mb-4">Groepsgemiddelden grafiek</h3>
+            <div class="w-full h-64 flex items-center justify-center">
+                <canvas id="groepenChart" class="w-full h-full"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Groepsgemiddelden grafiek -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Hier kun je later dynamisch data uit Laravel/PHP injecteren
+        const groepenLabels = @json(collect($groepen)->pluck('naam'));
+        const groepenGemiddelden = @json(collect($groepen)->pluck('gemiddelde'));
+        document.addEventListener('DOMContentLoaded', function () {
+            const ctx = document.getElementById('groepenChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: groepenLabels,
+                    datasets: [{
+                        label: 'Groepsgemiddelde (%)',
+                        data: groepenGemiddelden,
+                        backgroundColor: [
+                            'rgba(59, 130, 246, 0.7)',
+                            'rgba(16, 185, 129, 0.7)',
+                            'rgba(234, 179, 8, 0.7)'
+                        ],
+                        borderRadius: 8,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { display: false },
+                        title: { display: false }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: { stepSize: 10 }
+                        }
+                    }
+                }
+            });
+        });
+    </script>
 </div>
 @endsection
