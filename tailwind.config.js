@@ -21,6 +21,8 @@ export default {
                 grayish: "#6E7671",
                 dark: "#21272D",
                 redish: "#EA5141",
+                lichtpaars: "#697ae5",
+                donkerpaars: "#7650a9",
             },
         },
     },
