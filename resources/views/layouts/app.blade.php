@@ -16,7 +16,7 @@
     <!-- Scripts -->
      @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="font-belleza antialiased flex flex-col min-h-screen bg-white dark:bg-dark">
+<body class="font-belleza antialiased flex flex-col min-h-screen ">
     <div class="flex-grow">
         @include('layouts.navigation')
 
