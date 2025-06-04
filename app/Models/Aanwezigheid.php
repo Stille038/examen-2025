@@ -19,6 +19,7 @@ class Aanwezigheid extends Model // maak nieuwe model aan met naam Aanwezigheid 
         'rooster',
         'week',
         'jaar',
+        'groep',
     ];
 
 }

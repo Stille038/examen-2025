@@ -26,7 +26,18 @@ Route::get('/test', function () {
 })->name('test');
 
 Route::get('/docent/dashboard', function () {
-    return view('docent_dashboard'); 
+    $studenten = \App\Models\Aanwezigheid::all();
+    // Dynamisch: groepeer op groep en bereken gemiddelden
+    $groepen = $studenten->groupBy('groep')->map(function($groepStudenten, $groepNaam) {
+        $aantal = $groepStudenten->count();
+        $gemiddelde = $aantal > 0 ? round($groepStudenten->avg(function($s) { return $s->rooster ? ($s->aanwezigheid / $s->rooster) * 100 : 0; }), 0) : 0;
+        return [
+            'naam' => $groepNaam,
+            'gemiddelde' => $gemiddelde,
+            'aantal' => $aantal,
+        ];
+    })->values();
+    return view('docent_dashboard', compact('studenten', 'groepen'));
 })->name('docent.dashboard');
 
 Route::get('/contact', function () {
