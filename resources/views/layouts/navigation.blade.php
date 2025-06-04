@@ -23,7 +23,7 @@
                         <x-dropdown-link :href="route('dashboard')" class="text-sky-600 hover:underline px-4 py-1 block">
                             Student Dashboard
                         </x-dropdown-link>
-                        <x-dropdown-link :href="route('test')" class="text-sky-600 hover:underline px-4 py-1 block">
+                        <x-dropdown-link :href="route('docent.dashboard')" class="text-sky-600 hover:underline px-4 py-1 block">
                             Docent Overzicht
                         </x-dropdown-link>
                         <x-dropdown-link :href="route('test1')" class="text-sky-600 hover:underline px-4 py-1 block">
