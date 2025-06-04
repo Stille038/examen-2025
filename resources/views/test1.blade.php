@@ -1,3 +1,4 @@
+
 @extends('layouts.app')
 
 @section('title', 'test1')
@@ -22,7 +23,7 @@
             <label for="file-upload" class="cursor-pointer mt-4 px-4 py-2 bg-secondary-light  hover:bg-blue-600 text-white text-sm rounded inline-block">
                 📁 Bestanden selecteren
             </label>
-            <input id="file-upload" type="file" name="bestand" accept=".xls,.ods" class="hidden" onchange="this.form.submit()">
+            <input id="file-upload" type="file" name="bestand" accept=".xlsx,.ods" class="hidden" onchange="this.form.submit()">
         </form>
 
 
