@@ -2,7 +2,7 @@
     <!-- Session Status -->
     <x-auth-session-status class="mb-4" :status="session('status')" />
 
-    <form method="POST" action="{{ route('custom.login') }}"> <!--POST action om actie uit tevoeren logica komt in andere bestand -->
+    <form method="POST" action="{{ route('custom.login') }}"> <!--POST action om actie uit tevoeren logica komt in andere bestand stuurt gegevens door naar cunstomlogin waar wordt gecheckt of het bestaat of niet -->
         @csrf
 
         <!-- Studentnummer -->
