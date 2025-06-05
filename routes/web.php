@@ -7,25 +7,18 @@ use App\Http\Controllers\ExcelUploadController;
 use App\Http\Controllers\CustomLoginController;
 use App\Models\Aanwezigheid;
 
-// ➤ Dashboard: alle studenten laden
-Route::get('/', function () {
-    $studenten = Aanwezigheid::all();
-    return view('dashboard', compact('studenten'));
-})->name('dashboard');
-
 // ➤ Login functionaliteit op basis van studentnummer en rol
 Route::post('/custom-login', [CustomLoginController::class, 'login'])->name('custom.login');
 
-// ➤ Routes beveiligd met checkStudent middleware (student moet ingelogd zijn)
-Route::middleware('checkStudent')->group(function () {
-    Route::get('/student-dashboard', function () {
-        $studentnummer = session('studentnummer');
-        $studentenData = \App\Models\Aanwezigheid::where('studentnummer', $studentnummer)->get();
-        return view('student-dashboard', compact('studentenData'));
-    })->name('student-dashboard');
+Route::redirect('/', '/login'); // redirect naar login pagina   
+// ➤ Student dashboard (zonder checkStudent middleware)
+Route::get('/student-dashboard', function () {
+    $studentnummer = session('studentnummer');
+    $studentenData = \App\Models\Aanwezigheid::where('studentnummer', $studentnummer)->get();
+    return view('student-dashboard', compact('studentenData'));
+})->name('student-dashboard');
 
-    Route::view('/individueel-student', 'individueel-student')->name('individueel-student');
-});
+Route::view('/individueel-student', 'individueel-student')->name('individueel-student');
 
 // ➤ Route voor alle berekende statistieken (docent-overzicht)
 Route::get('/aanwezigheden', [AanwezigheidController::class, 'index'])->name('aanwezigheden.index');
@@ -46,10 +39,4 @@ Route::view('/terms', 'terms')->name('terms');
 Route::post('/upload-excel', [ExcelUploadController::class, 'store'])->name('excel.upload');
 
 // ➤ Profielroutes (alleen voor ingelogde gebruikers via standaard Laravel auth)
-Route::middleware('auth')->group(function () {
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-});
-
 require __DIR__ . '/auth.php';
