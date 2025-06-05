@@ -3,4 +3,5 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AanwezigheidController;
 
-Route::get('/aanwezigheden', [AanwezigheidController::class, 'index']); // route van aanwezigheid controller 
+Route::get('/aanwezigheden', [AanwezigheidController::class, 'index']);
+    
