@@ -2,20 +2,19 @@
 
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Api\AanwezigheidController;
 use App\Models\Aanwezigheid;
 use App\Http\Controllers\ExcelUploadController;
+use App\Http\Controllers\AanwezigheidController; 
 
+Route::get('/student-dashboard', [AanwezigheidController::class, 'index'])->name('student-dashboard');
 Route::get('/aanwezigheden', [AanwezigheidController::class, 'index']);
 
+
 Route::get('/', function () {
-    $studenten = Aanwezigheid::all(); // haal alle studentgegevens op
+    $studenten = Aanwezigheid::all(); 
     return view('dashboard', compact('studenten'));
 })->name('dashboard');
 
-Route::get('/student-dashboard', function () {
-    return view('student-dashboard'); 
-})->name('student-dashboard');
 Route::get('/individueel-student', function () {
     return view('individueel-student'); 
 })->name('individueel-student');

@@ -16,7 +16,7 @@ return new class extends Migration
             $table->integer('rooster');
             $table->integer('week');
             $table->integer('jaar');
-            $table->timestamps(); // maakt automatisch created_at en updated_at kolommen
+            $table->timestamps(); 
         });
     }
 
