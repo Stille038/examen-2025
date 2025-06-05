@@ -11,10 +11,11 @@ use App\Models\Aanwezigheid;
 Route::post('/custom-login', [CustomLoginController::class, 'login'])->name('custom.login');
 
 Route::redirect('/', '/login'); // redirect naar login pagina   
+
 // ➤ Student dashboard (zonder checkStudent middleware)
 Route::get('/student-dashboard', function () {
     $studentnummer = session('studentnummer');
-    $studentenData = \App\Models\Aanwezigheid::where('studentnummer', $studentnummer)->get();
+    $studentenData = Aanwezigheid::where('studentnummer', $studentnummer)->get();
     return view('student-dashboard', compact('studentenData'));
 })->name('student-dashboard');
 
@@ -30,7 +31,13 @@ Route::get('/student/{studentnummer}', [AanwezigheidController::class, 'show'])-
 Route::view('/test1', 'test1')->name('test1');
 Route::view('/test2', 'test2')->name('test2');
 Route::view('/test', 'test')->name('test');
-Route::view('/docent/dashboard', 'docent_dashboard')->name('docent.dashboard');
+
+// Aangepaste route voor docent-dashboard met data
+Route::get('/docent/dashboard', function () {
+    $studenten = Aanwezigheid::all();
+    return view('docent_dashboard', compact('studenten'));
+})->name('docent.dashboard');
+
 Route::view('/contact', 'contact')->name('contact');
 Route::view('/privacy', 'privacy')->name('privacy');
 Route::view('/terms', 'terms')->name('terms');
