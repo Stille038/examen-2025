@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AanwezigheidController;
 use App\Models\Aanwezigheid;
 use App\Http\Controllers\ExcelUploadController;
+use App\Http\Controllers\RapportageController;
 
 Route::get('/aanwezigheden', [AanwezigheidController::class, 'index']);
 
@@ -59,5 +60,9 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 Route::post('/upload-excel', [ExcelUploadController::class, 'store'])->name('excel.upload');
+
+// PDF Rapportage Routes
+Route::get('/docent/rapportage/student/{studentnummer}', [RapportageController::class, 'studentPdf'])->name('rapportage.student.pdf');
+Route::get('/docent/rapportage/groep/{groepNaam}', [RapportageController::class, 'groepPdf'])->name('rapportage.groep.pdf');
 
 require __DIR__.'/auth.php';

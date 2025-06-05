@@ -10,6 +10,14 @@
                         Groep: {{ $groepen[0]['naam'] ?? '-' }} | Actieve studenten: {{ $groepen[0]['aantal'] ?? '-' }}
                     </p>
 
+                    {{-- Groepsrapportage Download Knop --}}
+                    @if(isset($groepen[0]['naam']))
+                        <a href="{{ route('rapportage.groep.pdf', $groepen[0]['naam']) }}"
+                           class="inline-block bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md transition-colors mb-4">
+                            Groepsrapportage Downloaden
+                        </a>
+                    @endif
+
                     <!-- Filter/Navigation Tabs -->
         <div x-data="{ tab: 'overzicht' }" class="flex flex-wrap gap-2 mb-6">
             <button @click="tab = 'overzicht'" :class="tab === 'overzicht' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-800'" class="px-4 py-2 rounded-md transition-colors">Overzicht</button>
@@ -77,6 +85,8 @@
                                     <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Gemiddelde</th>
                                     <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Laatste week</th>
                                     <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                    {{-- PDF Download Header --}}
+                                    <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rapportage</th>
                                 </tr>
                             </thead>
                             <tbody class="bg-white divide-y divide-gray-200">
@@ -105,6 +115,13 @@
                                     @else
                                         <span class="bg-green-100 text-green-800 px-2 py-1 rounded">✓ Actief</span>
                                     @endif
+                                    </td>
+                                    {{-- PDF Download Knop --}}
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        <a href="{{ route('rapportage.student.pdf', $student->studentnummer) }}"
+                                           class="text-blue-600 hover:text-blue-900">
+                                            Download PDF
+                                        </a>
                                     </td>
                                 </tr>
                                 @endforeach
