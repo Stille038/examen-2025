@@ -2,31 +2,27 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\AanwezigheidController;
 use App\Http\Controllers\ExcelUploadController;
 use App\Http\Controllers\CustomLoginController;
-use App\Models\Aanwezigheid;
+use App\Http\Controllers\AanwezigheidController;
 
-// ➤ Login functionaliteit op basis van studentnummer en rol
+// ➤ Login functionaliteit
 Route::post('/custom-login', [CustomLoginController::class, 'login'])->name('custom.login');
+Route::redirect('/', '/login');
 
-Route::redirect('/', '/login'); // redirect naar login pagina   
-// ➤ Student dashboard (zonder checkStudent middleware)
-Route::get('/student-dashboard', function () {
-    $studentnummer = session('studentnummer');
-    $studentenData = \App\Models\Aanwezigheid::where('studentnummer', $studentnummer)->get();
-    return view('student-dashboard', compact('studentenData'));
-})->name('student-dashboard');
+// ➤ Student dashboard (data via controller, NIET via closure)
+Route::get('/student-dashboard', [AanwezigheidController::class, 'index'])->name('student-dashboard');
 
+// ➤ Individueel studentenscherm (alleen als je iets extra's wilt)
 Route::view('/individueel-student', 'individueel-student')->name('individueel-student');
 
-// ➤ Route voor alle berekende statistieken (docent-overzicht)
+// ➤ Aanwezighedenoverzicht voor docenten
 Route::get('/aanwezigheden', [AanwezigheidController::class, 'index'])->name('aanwezigheden.index');
 
-// ➤ Optioneel: individuele student route (op basis van studentnummer)
+// ➤ Individuele student (bijv. vanuit docent-interface)
 Route::get('/student/{studentnummer}', [AanwezigheidController::class, 'show'])->name('student.show');
 
-// ➤ Losse pagina's (voorkant)
+// ➤ Overige pagina's
 Route::view('/test1', 'test1')->name('test1');
 Route::view('/test2', 'test2')->name('test2');
 Route::view('/test', 'test')->name('test');
@@ -38,5 +34,5 @@ Route::view('/terms', 'terms')->name('terms');
 // ➤ Excel upload
 Route::post('/upload-excel', [ExcelUploadController::class, 'store'])->name('excel.upload');
 
-// ➤ Profielroutes (alleen voor ingelogde gebruikers via standaard Laravel auth)
+// ➤ Laravel-authentificatie
 require __DIR__ . '/auth.php';
