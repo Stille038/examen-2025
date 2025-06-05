@@ -23,9 +23,7 @@ Route::get('/aanwezigheden', [AanwezigheidController::class, 'index'])->name('aa
 Route::get('/student/{studentnummer}', [AanwezigheidController::class, 'show'])->name('student.show');
 
 // ➤ Overige pagina's
-Route::view('/test1', 'test1')->name('test1');
-Route::view('/test2', 'test2')->name('test2');
-Route::view('/test', 'test')->name('test');
+Route::view('/importing', 'importing')->name('importing');
 Route::view('/docent/dashboard', 'docent_dashboard')->name('docent.dashboard');
 Route::view('/contact', 'contact')->name('contact');
 Route::view('/privacy', 'privacy')->name('privacy');
@@ -34,5 +32,4 @@ Route::view('/terms', 'terms')->name('terms');
 // ➤ Excel upload
 Route::post('/upload-excel', [ExcelUploadController::class, 'store'])->name('excel.upload');
 
-// ➤ Laravel-authentificatie
 require __DIR__ . '/auth.php';
