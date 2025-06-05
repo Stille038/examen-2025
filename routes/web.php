@@ -1,38 +1,68 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProfileController;
+use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\AanwezigheidController;
+use App\Models\Aanwezigheid;
 use App\Http\Controllers\ExcelUploadController;
-use App\Http\Controllers\CustomLoginController;
-use App\Http\Controllers\AanwezigheidController;
+use App\Http\Controllers\RapportageController;
 
-// ➤ Login functionaliteit
-Route::post('/custom-login', [CustomLoginController::class, 'login'])->name('custom.login');
-Route::redirect('/', '/login');
+Route::get('/aanwezigheden', [AanwezigheidController::class, 'index']);
 
-// ➤ Student dashboard (data via controller, NIET via closure)
-Route::get('/student-dashboard', [AanwezigheidController::class, 'index'])->name('student-dashboard');
+Route::get('/', function () {
+    $studenten = Aanwezigheid::all(); // haal alle studentgegevens op
+    return view('dashboard', compact('studenten'));
+})->name('dashboard');
 
-// ➤ Individueel studentenscherm (alleen als je iets extra's wilt)
-Route::view('/individueel-student', 'individueel-student')->name('individueel-student');
+Route::get('/student-dashboard', function () {
+    return view('student-dashboard'); 
+})->name('student-dashboard');
+Route::get('/individueel-student', function () {
+    return view('individueel-student'); 
+})->name('individueel-student');
+Route::get('/test1', function () {
+    return view('test1'); 
+})->name('test1');
 
-// ➤ Aanwezighedenoverzicht voor docenten
-Route::get('/aanwezigheden', [AanwezigheidController::class, 'index'])->name('aanwezigheden.index');
+Route::get('/test2', function () {
+    return view('test2'); 
+})->name('test2');
 
-// ➤ Individuele student (bijv. vanuit docent-interface)
-Route::get('/student/{studentnummer}', [AanwezigheidController::class, 'show'])->name('student.show');
+Route::get('/test', function () {
+    return view('test'); 
+})->name('test');
 
-// ➤ Overige pagina's
-Route::view('/test1', 'test1')->name('test1');
-Route::view('/test2', 'test2')->name('test2');
-Route::view('/test', 'test')->name('test');
-Route::view('/docent/dashboard', 'docent_dashboard')->name('docent.dashboard');
-Route::view('/contact', 'contact')->name('contact');
+Route::get('/docent/dashboard', function () {
+    $studenten = \App\Models\Aanwezigheid::all();
+    // Dynamisch: groepeer op groep en bereken gemiddelden
+    $groepen = $studenten->groupBy('groep')->map(function($groepStudenten, $groepNaam) {
+        $aantal = $groepStudenten->count();
+        $gemiddelde = $aantal > 0 ? round($groepStudenten->avg(function($s) { return $s->rooster ? ($s->aanwezigheid / $s->rooster) * 100 : 0; }), 0) : 0;
+        return [
+            'naam' => $groepNaam,
+            'gemiddelde' => $gemiddelde,
+            'aantal' => $aantal,
+        ];
+    })->values();
+    return view('docent_dashboard', compact('studenten', 'groepen'));
+})->name('docent.dashboard');
+
+Route::get('/contact', function () {
+    return view('contact');
+})->name('contact');
+
 Route::view('/privacy', 'privacy')->name('privacy');
 Route::view('/terms', 'terms')->name('terms');
 
-// ➤ Excel upload
+Route::middleware('auth')->group(function () {
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+});
 Route::post('/upload-excel', [ExcelUploadController::class, 'store'])->name('excel.upload');
 
-// ➤ Laravel-authentificatie
-require __DIR__ . '/auth.php';
+// PDF Rapportage Routes
+Route::get('/docent/rapportage/student/{studentnummer}', [RapportageController::class, 'studentPdf'])->name('rapportage.student.pdf');
+Route::get('/docent/rapportage/groep/{groepNaam}', [RapportageController::class, 'groepPdf'])->name('rapportage.groep.pdf');
+
+require __DIR__.'/auth.php';

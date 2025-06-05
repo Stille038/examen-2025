@@ -4,194 +4,267 @@
 
 @section('content')
 <div class="container py-8">
-                <div class="bg-white shadow-md rounded-lg p-6 mb-6">
-                    <h2 class="text-2xl font-semibold text-gray-800 mb-2">Groepsoverzicht Aanwezigheid</h2>
-                    <p class="text-gray-600 mb-4">
-                        Groep: {{ $groepen[0]['naam'] ?? '-' }} | Actieve studenten: {{ $groepen[0]['aantal'] ?? '-' }}
-                    </p>
+    {{-- Wrap filter options and student list in a new div with Alpine data --}}
+    <div x-data="{ selectedGroep: 'All', selectedPeriode: 'Laatste 4 weken', selectedFilterOp: 'Alle studenten', zoekStudentTerm: '', allStudenten: {{ Js::from($studenten) }}, get filteredStudenten() { return this.allStudenten.filter(student => {
+        const matchesGroep = this.selectedGroep === 'All' || (student.groep === this.selectedGroep);
+        
+        // Implementatie voor Periode filter zou hier komen. Dit vereist dat de student data vanuit de backend
+        // informatie bevat over aanwezigheid per periode (bv. per week of per schooljaar).
+        // De huidige student data bevat alleen totale aanwezigheid en rooster. Extra data is nodig voor deze filter.
+        const matchesPeriode = true; // Tijdelijk altijd true, implementatie afhankelijk van backend data.
 
-                    <!-- Filter/Navigation Tabs -->
-        <div x-data="{ tab: 'overzicht' }" class="flex flex-wrap gap-2 mb-6">
-            <button @click="tab = 'overzicht'" :class="tab === 'overzicht' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-800'" class="px-4 py-2 rounded-md transition-colors">Overzicht</button>
-            <button @click="tab = 'risico'" :class="tab === 'risico' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-800'" class="px-4 py-2 rounded-md transition-colors">Risicostudenten</button>
-            <button @click="tab = 'top'" :class="tab === 'top' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-800'" class="px-4 py-2 rounded-md transition-colors">Toppresteerders</button>
-            <button @click="tab = 'gestopt'" :class="tab === 'gestopt' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-800'" class="px-4 py-2 rounded-md transition-colors">Gestopte studenten</button>
-                    </div>
+        // Implementatie voor Filter op %
+        const studentPercentage = student.rooster > 0 ? (student.aanwezigheid / student.rooster) * 100 : 0;
+        let matchesFilterOp = true;
 
-                    <!-- Filter Options -->
-        <div class="flex flex-wrap items-center gap-4 mb-6">
-            <div class="min-w-[150px] flex-1 sm:flex-none">
-                            <label for="periode" class="block text-sm font-medium text-gray-700">Periode</label>
-                <select id="periode" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border border-primary focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">
-                                <option>Laatste 4 weken</option>
-                            </select>
-                        </div>
-            <div class="min-w-[150px] flex-1 sm:flex-none">
-                            <label for="filter_op" class="block text-sm font-medium text-gray-700">Filter op %</label>
-                <select id="filter_op" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border border-primary focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">
-                                <option>Alle studenten</option>
-                            </select>
-                        </div>
-            <div class="flex-grow min-w-[200px]">
-                            <label for="zoek_student" class="block text-sm font-medium text-gray-700">Zoek student</label>
-                <input type="text" id="zoek_student" placeholder="Naam of studentnr..." class="mt-1 block w-full pl-3 pr-3 py-2 text-base border border-primary focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">
-                        </div>
-            <button class="mt-5 sm:mt-0 bg-blue-600 text-white px-4 py-2 rounded-md">Filter toepassen</button>
-                    </div>
+        switch (this.selectedFilterOp) {
+            case '0-20%':
+                matchesFilterOp = studentPercentage >= 0 && studentPercentage <= 20;
+                break;
+            case '20-50%':
+                matchesFilterOp = studentPercentage > 20 && studentPercentage <= 50;
+                break;
+            case '50-80%':
+                matchesFilterOp = studentPercentage > 50 && studentPercentage <= 80;
+                break;
+            case '> 80%':
+                matchesFilterOp = studentPercentage > 80;
+                break;
+            case '< 50%':
+                matchesFilterOp = studentPercentage < 50;
+                break;
+            case 'Alle studenten':
+            default:
+                matchesFilterOp = true;
+        }
 
-                    <!-- Summary Cards -->
-                    @php
-                        $aantalStudenten = $studenten->count();
-                        $gemiddelde = $aantalStudenten > 0 ? round($studenten->avg(function($s) { return $s->rooster ? ($s->aanwezigheid / $s->rooster) * 100 : 0; }), 0) : 0;
-                        $risico = $studenten->filter(function($s) { return $s->rooster && ($s->aanwezigheid / $s->rooster) * 100 < 50; })->count();
-                        $top = $studenten->filter(function($s) { return $s->rooster && ($s->aanwezigheid / $s->rooster) * 100 > 80; })->count();
-                        $gestopt = $studenten->filter(function($s) { return $s->rooster == 0; })->count();
-                    @endphp
-                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-            <div class="bg-green-100 rounded-lg p-4 text-center">
-                            <p class="text-4xl font-bold text-green-600">{{ $gemiddelde }}%</p>
-                            <p class="text-gray-600">Groepsgemiddelde</p>
-                        </div>
-            <div class="bg-red-100 rounded-lg p-4 text-center">
-                            <p class="text-4xl font-bold text-red-600">{{ $risico }}</p>
-                <p class="text-gray-600">Risicostudenten (&lt;50%)</p>
-                        </div>
-            <div class="bg-green-50 rounded-lg p-4 text-center">
-                            <p class="text-4xl font-bold text-green-600">{{ $top }}</p>
-                <p class="text-gray-600">Goede prestaties (&gt; 80%)</p>
-                        </div>
-            <div class="bg-gray-100 rounded-lg p-4 text-center">
-                            <p class="text-4xl font-bold text-gray-600">{{ $gestopt }}</p>
-                            <p class="text-gray-600">Gestopte studenten</p>
-                        </div>
-                    </div>
+        // Implementatie voor Zoek student filter
+        const zoekTerm = this.zoekStudentTerm.toLowerCase();
+        const matchesZoekStudent = zoekTerm === '' || 
+                                 (student.naam && student.naam.toLowerCase().includes(zoekTerm)) || 
+                                 (student.studentnummer && student.studentnummer.toLowerCase().includes(zoekTerm));
 
-                    <!-- Student List -->
-        <div class="bg-white shadow rounded-lg p-6">
-            <h3 class="text-xl font-semibold text-gray-800 mb-4">Studenten</h3>
-            <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200 text-sm">
-                            <thead>
-                                <tr>
-                                    <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Student</th>
-                                    <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Gemiddelde</th>
-                                    <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Laatste week</th>
-                                    <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                                </tr>
-                            </thead>
-                            <tbody class="bg-white divide-y divide-gray-200">
-                                @foreach($studenten as $student)
-                                    @php
-                                        $gem = $student->rooster ? round(($student->aanwezigheid / $student->rooster) * 100) : 0;
-                                        $laatsteWeek = $student->laatste_week ?? $gem; // pas aan als je weekdata hebt
-                                        $status = $student->rooster == 0 ? 'Gestopt' : ($gem < 50 ? 'Risico' : 'Actief');
-                                    @endphp
-                                <tr>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                            <div class="text-sm font-medium text-gray-900">{{ $student->naam ?? $student->studentnummer }}</div>
-                                            <div class="text-sm text-gray-500">{{ $student->studentnummer }}</div>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                    <span class="{{ $gem > 80 ? 'bg-green-200 text-green-800' : ($gem < 50 ? 'bg-red-200 text-red-800' : 'bg-yellow-200 text-yellow-800') }} px-2 py-1 rounded">{{ $gem }}%</span>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                    <span class="bg-gray-200 text-gray-800 px-2 py-1 rounded">{{ $laatsteWeek }}%</span>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                    @if($student->rooster == 0)
-                                        <span class="bg-gray-100 text-gray-800 px-2 py-1 rounded">• Gestopt</span>
-                                    @elseif($gem < 50)
-                                        <span class="bg-red-100 text-red-800 px-2 py-1 rounded">▲ Risico</span>
-                                    @else
-                                        <span class="bg-green-100 text-green-800 px-2 py-1 rounded">✓ Actief</span>
-                                    @endif
-                                    </td>
-                                </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-    </div>
+        return matchesGroep && matchesPeriode && matchesFilterOp && matchesZoekStudent;
+    }); } }" class="flex flex-col gap-6">
+        <div class="bg-white shadow-md rounded-lg p-6">
+            <h2 class="text-2xl font-semibold text-gray-800 mb-2">Groepsoverzicht Aanwezigheid</h2>
 
-    <!-- Vergelijking Groepen -->
-    <div class="bg-white shadow-md rounded-lg p-6 mb-8">
-        <h2 class="text-xl font-semibold text-gray-800 mb-4">Vergelijk groepsgemiddelden</h2>
-        <div class="overflow-x-auto mb-6">
-            <table class="min-w-full divide-y divide-gray-200 text-sm">
-                <thead>
-                    <tr>
-                        <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Groep</th>
-                        <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Gemiddelde</th>
-                        <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aantal studenten</th>
-                    </tr>
-                </thead>
-                <tbody class="bg-white divide-y divide-gray-200">
-                    @foreach($groepen as $groep)
-                        <tr>
-                            <td class="px-6 py-4 whitespace-nowrap">{{ $groep['naam'] }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap">{{ $groep['gemiddelde'] }}%</td>
-                            <td class="px-6 py-4 whitespace-nowrap">{{ $groep['aantal'] }}</td>
-                        </tr>
-                    @endforeach
-                </tbody>
-            </table>
-        </div>
-        <div x-data="{
-                vergelijk: false,
-                chartType: 'gemiddelde',
-                chartStyle: 'bar',
-                selectedGroups: [],
-                init() {
-                    this.selectedGroups = window.groepenNamen;
-                    this.$watch('chartType', () => this.updateChart());
-                    this.$watch('chartStyle', () => this.updateChart());
-                    this.$watch('selectedGroups', () => this.updateChart());
-                    this.$watch('vergelijk', () => this.updateChart());
-                },
-                updateChart() {
-                    renderChart(this.chartType, this.chartStyle, this.selectedGroups, this.vergelijk);
-                }
-            }"
-            x-init="renderChart(chartType, chartStyle, selectedGroups, vergelijk)"
-            class="flex flex-col items-center justify-center bg-gray-50 rounded-lg shadow-inner p-6 w-full md:w-2/3 mx-auto">
-            <div class="w-full flex flex-col sm:flex-row items-center justify-between mb-4 gap-2">
-                <h3 class="text-lg font-semibold text-gray-700">Kies een grafiek en type</h3>
-                <div class="flex items-center gap-2">
-                    <label class="font-medium text-gray-700 flex items-center gap-1">
-                        <input type="checkbox" x-model="vergelijk" class="form-checkbox h-4 w-4 text-blue-600">
-                        Vergelijkingsmodus
-                    </label>
-                </div>
+            {{-- Groepsrapportage Download Knop --}}
+            @if(isset($groepen[0]['naam']))
+                <a href="{{ route('rapportage.groep.pdf', $groepen[0]['naam']) }}"
+                   class="inline-block bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md transition-colors mb-4">
+                    Groepsrapportage Downloaden
+                </a>
+            @endif
+
+            <!-- Filter/Navigation Tabs -->
+            <div x-data="{ tab: 'overzicht' }" class="flex flex-wrap gap-2 mb-6">
+                <button @click="tab = 'overzicht'" :class="tab === 'overzicht' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-800'" class="px-4 py-2 rounded-md transition-colors">Overzicht</button>
+                <button @click="tab = 'risico'" :class="tab === 'risico' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-800'" class="px-4 py-2 rounded-md transition-colors">Risicostudenten</button>
+                <button @click="tab = 'top'" :class="tab === 'top' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-800'" class="px-4 py-2 rounded-md transition-colors">Toppresteerders</button>
+                <button @click="tab = 'gestopt'" :class="tab === 'gestopt' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-800'" class="px-4 py-2 rounded-md transition-colors">Gestopte studenten</button>
             </div>
-            <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto mb-4">
-                <select x-model="chartType" class="border border-primary rounded px-3 py-2 focus:outline-none focus:ring-blue-500">
-                    <option value="gemiddelde">Groepsgemiddelden</option>
-                    <option value="aantal">Aantal studenten per groep</option>
-                    <option value="trend">Trend (dummy)</option>
-                </select>
-                <select x-model="chartStyle" class="border border-primary rounded px-3 py-2 focus:outline-none focus:ring-blue-500">
-                    <option value="bar">Staafdiagram</option>
-                    <option value="line">Lijngrafiek</option>
-                    <option value="pie">Cirkeldiagram</option>
-                    <option value="doughnut">Donutdiagram</option>
-                </select>
-            </div>
-            <template x-if="vergelijk">
-                <div class="w-full flex flex-col sm:flex-row items-center gap-2 mb-4">
-                    <label class="font-medium text-gray-700">Selecteer 2+ groepen:</label>
-                    <select x-model="selectedGroups" multiple class="border border-primary rounded px-3 py-2 focus:outline-none focus:ring-blue-500 w-full sm:w-auto min-w-[180px]" size="3">
+
+            <!-- Filter Options -->
+            <div class="flex flex-wrap items-center gap-4 mb-6">
+                {{-- Groep Select Dropdown --}}
+                <div class="min-w-[150px] flex-1 sm:flex-none">
+                    <label for="groep_select" class="block text-sm font-medium text-gray-700">Selecteer Groep</label>
+                    <select x-model="selectedGroep" id="groep_select" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border border-primary focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">
+                        <option value="All">Alle Groepen</option>
                         @foreach($groepen as $groep)
                             <option value="{{ $groep['naam'] }}">{{ $groep['naam'] }}</option>
                         @endforeach
                     </select>
                 </div>
-            </template>
-            <div class="w-full h-96 flex items-center justify-center border border-gray-200 rounded-lg bg-white p-4">
-                <canvas id="groepenChart" class="w-full h-full"></canvas>
+                <div class="min-w-[150px] flex-1 sm:flex-none">
+                    <label for="periode" class="block text-sm font-medium text-gray-700">Periode</label>
+                    <select x-model="selectedPeriode" id="periode" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border border-primary focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">
+                        <option value="Laatste 1 week">Laatste 1 week</option>
+                        <option value="Laatste 2 weken">Laatste 2 weken</option>
+                        <option value="Laatste 3 weken">Laatste 3 weken</option>
+                        <option value="Laatste 4 weken">Laatste 4 weken</option>
+                        <option value="Laatste 8 weken">Laatste 8 weken</option>
+                        <option value="Laatste 12 weken">Laatste 12 weken</option>
+                        <option value="Dit schooljaar">Dit schooljaar</option>
+                        <option value="Vorig schooljaar">Vorig schooljaar</option>
+                        {{-- Voeg hier meer periode opties toe --}}
+                    </select>
+                </div>
+                <div class="min-w-[150px] flex-1 sm:flex-none">
+                    <label for="filter_op" class="block text-sm font-medium text-gray-700">Filter op %</label>
+                    <select x-model="selectedFilterOp" id="filter_op" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border border-primary focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">
+                        <option value="Alle studenten">Alle studenten</option>
+                        <option value="0-20%">0-20%</option>
+                        <option value="20-50%">20-50%</option>
+                        <option value="50-80%">50-80%</option>
+                        <option value="> 80%">> 80%</option>
+                        <option value="< 50%">< 50%</option>
+                        {{-- Voeg hier meer filter opties toe --}}
+                    </select>
+                </div>
+                <div class="flex-grow min-w-[200px]">
+                    <label for="zoek_student" class="block text-sm font-medium text-gray-700">Zoek student</label>
+                    <input type="text" x-model="zoekStudentTerm" id="zoek_student" placeholder="Naam of studentnr..." class="mt-1 block w-full pl-3 pr-3 py-2 text-base border border-primary focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">
+                </div>
+            </div>
+
+            <!-- Summary Cards -->
+            @php
+                $aantalStudenten = $studenten->count();
+                $gemiddelde = $aantalStudenten > 0 ? round($studenten->avg(function($s) { return $s->rooster ? ($s->aanwezigheid / $s->rooster) * 100 : 0; }), 0) : 0;
+                $risico = $studenten->filter(function($s) { return $s->rooster && ($s->aanwezigheid / $s->rooster) * 100 < 50; })->count();
+                $top = $studenten->filter(function($s) { return $s->rooster && ($s->aanwezigheid / $s->rooster) * 100 > 80; })->count();
+                $gestopt = $studenten->filter(function($s) { return $s->rooster == 0; })->count();
+            @endphp
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                <div class="bg-green-100 rounded-lg p-4 text-center">
+                    <p class="text-4xl font-bold text-green-600">{{ $gemiddelde }}%</p>
+                    <p class="text-gray-600">Groepsgemiddelde</p>
+                </div>
+                <div class="bg-red-100 rounded-lg p-4 text-center">
+                    <p class="text-4xl font-bold text-red-600">{{ $risico }}</p>
+                    <p class="text-gray-600">Risicostudenten (&lt;50%)</p>
+                </div>
+                <div class="bg-green-50 rounded-lg p-4 text-center">
+                    <p class="text-4xl font-bold text-green-600">{{ $top }}</p>
+                    <p class="text-gray-600">Goede prestaties (&gt; 80%)</p>
+                </div>
+                <div class="bg-gray-100 rounded-lg p-4 text-center">
+                    <p class="text-4xl font-bold text-gray-600">{{ $gestopt }}</p>
+                    <p class="text-gray-600">Gestopte studenten</p>
+                </div>
+            </div>
+
+            <!-- Student List -->
+            <div class="bg-white shadow rounded-lg p-6">
+                <h3 class="text-xl font-semibold text-gray-800 mb-4">Studenten</h3>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200 text-sm">
+                        <thead>
+                            <tr>
+                                <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Student</th>
+                                <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Gemiddelde</th>
+                                <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Laatste week</th>
+                                <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                {{-- PDF Download Header --}}
+                                <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rapportage</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            <template x-for="student in filteredStudenten" :key="student.studentnummer">
+                                @php
+                                    // These Blade variables are not available inside x-for
+                                    // We'll calculate status/gem using Alpine.js if needed for display
+                                @endphp
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm font-medium text-gray-900" x-text="student.naam ?? student.studentnummer"></div>
+                                        <div class="text-sm text-gray-500" x-text="student.studentnummer"></div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span :class="{'bg-green-200 text-green-800': (student.rooster && (student.aanwezigheid / student.rooster) * 100 > 80), 'bg-red-200 text-red-800': (student.rooster && (student.aanwezigheid / student.rooster) * 100 < 50), 'bg-yellow-200 text-yellow-800': (student.rooster && (student.aanwezigheid / student.rooster) * 100 >= 50 && (student.aanwezigheid / student.rooster) * 100 <= 80) }" class="px-2 py-1 rounded" x-text="(student.rooster ? Math.round((student.aanwezigheid / student.rooster) * 100) : 0) + '%'"></span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="bg-gray-200 text-gray-800 px-2 py-1 rounded" x-text="student.laatste_week ?? (student.rooster ? Math.round((student.aanwezigheid / student.rooster) * 100) : 0) + '%'"></span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span :class="{'bg-gray-100 text-gray-800': student.rooster == 0, 'bg-red-100 text-red-800': (student.rooster > 0 && (student.aanwezigheid / student.rooster) * 100 < 50), 'bg-green-100 text-green-800': (student.rooster > 0 && (student.aanwezigheid / student.rooster) * 100 >= 50) }" class="px-2 py-1 rounded" x-text="student.rooster == 0 ? '• Gestopt' : ((student.rooster > 0 && (student.aanwezigheid / student.rooster) * 100 < 50) ? '▲ Risico' : '✓ Actief')"></span>
+                                    </td>
+                                    {{-- PDF Download Knop --}}
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        <a :href="'/docent/rapportage/student/' + student.studentnummer"
+                                           class="text-blue-600 hover:text-blue-900">
+                                            Download PDF
+                                        </a>
+                                    </td>
+                                </tr>
+                            </template>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
-    </div>
+
+        <!-- Vergelijking Groepen -->
+        <div class="bg-white shadow-md rounded-lg p-6 mb-8">
+            <h2 class="text-xl font-semibold text-gray-800 mb-4">Vergelijk groepsgemiddelden</h2>
+            <div class="overflow-x-auto mb-6">
+                <table class="min-w-full divide-y divide-gray-200 text-sm">
+                    <thead>
+                        <tr>
+                            <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Groep</th>
+                            <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Gemiddelde</th>
+                            <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aantal studenten</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        @foreach($groepen as $groep)
+                            <tr>
+                                <td class="px-6 py-4 whitespace-nowrap">{{ $groep['naam'] }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap">{{ $groep['gemiddelde'] }}%</td>
+                                <td class="px-6 py-4 whitespace-nowrap">{{ $groep['aantal'] }}</td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+            <div x-data="{
+                    vergelijk: false,
+                    chartType: 'gemiddelde',
+                    chartStyle: 'bar',
+                    selectedGroups: [],
+                    init() {
+                        this.selectedGroups = window.groepenNamen;
+                        this.$watch('chartType', () => this.updateChart());
+                        this.$watch('chartStyle', () => this.updateChart());
+                        this.$watch('selectedGroups', () => this.updateChart());
+                        this.$watch('vergelijk', () => this.updateChart());
+                    },
+                    updateChart() {
+                        renderChart(this.chartType, this.chartStyle, this.selectedGroups, this.vergelijk);
+                    }
+                }"
+                x-init="renderChart(chartType, chartStyle, selectedGroups, vergelijk)"
+                class="flex flex-col items-center justify-center bg-gray-50 rounded-lg shadow-inner p-6 w-full md:w-2/3 mx-auto">
+                <div class="w-full flex flex-col sm:flex-row items-center justify-between mb-4 gap-2">
+                    <h3 class="text-lg font-semibold text-gray-700">Kies een grafiek en type</h3>
+                    <div class="flex items-center gap-2">
+                        <label class="font-medium text-gray-700 flex items-center gap-1">
+                            <input type="checkbox" x-model="vergelijk" class="form-checkbox h-4 w-4 text-blue-600">
+                            Vergelijkingsmodus
+                        </label>
+                    </div>
+                </div>
+                <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto mb-4">
+                    <select x-model="chartType" class="border border-primary rounded px-3 py-2 focus:outline-none focus:ring-blue-500">
+                        <option value="gemiddelde">Groepsgemiddelden</option>
+                        <option value="aantal">Aantal studenten per groep</option>
+                        <option value="trend">Trend (dummy)</option>
+                    </select>
+                    <select x-model="chartStyle" class="border border-primary rounded px-3 py-2 focus:outline-none focus:ring-blue-500">
+                        <option value="bar">Staafdiagram</option>
+                        <option value="line">Lijngrafiek</option>
+                        <option value="pie">Cirkeldiagram</option>
+                        <option value="doughnut">Donutdiagram</option>
+                    </select>
+                </div>
+                <template x-if="vergelijk">
+                    <div class="w-full flex flex-col sm:flex-row items-center gap-2 mb-4">
+                        <label class="font-medium text-gray-700">Selecteer 2+ groepen:</label>
+                        <select x-model="selectedGroups" multiple class="border border-primary rounded px-3 py-2 focus:outline-none focus:ring-blue-500 w-full sm:w-auto min-w-[180px]" size="3">
+                            @foreach($groepen as $groep)
+                                <option value="{{ $groep['naam'] }}">{{ $groep['naam'] }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                </template>
+                <div class="w-full h-96 flex items-center justify-center border border-gray-200 rounded-lg bg-white p-4">
+                    <canvas id="groepenChart" class="w-full h-full"></canvas>
+                </div>
+            </div>
+        </div>
+    </div> {{-- End of new wrapper div --}}
 
     <!-- Groepsgemiddelden grafiek -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
@@ -369,6 +442,8 @@
     </script>
     <script>
         window.groepenNamen = @json(collect($groepen)->pluck('naam'));
+        // Also make studentenData globally available or pass to the correct Alpine scope
+        window.studentenData = @json($studenten);
     </script>
 </div>
 @endsection
