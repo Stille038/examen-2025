@@ -17,7 +17,7 @@ Route::post('/custom-login', [CustomLoginController::class, 'login'])->name('cus
 // ➤ Student-dashboard (via controller met filters en statistieken)
 Route::get('/student-dashboard', [AanwezigheidController::class, 'index'])->name('student-dashboard');
 
-// ➤ Losse weergavepagina’s
+// ➤ Losse weergavepagina's
 Route::view('/individueel-student', 'individueel-student')->name('individueel-student');
 Route::view('/test1', 'test1')->name('test1');
 Route::view('/test2', 'test2')->name('test2');
@@ -28,23 +28,16 @@ Route::view('/terms', 'terms')->name('terms');
 
 // ➤ Docent-dashboard met groepsstatistieken
 Route::get('/docent/dashboard', function () {
-    $studenten = Aanwezigheid::all();
-
-    $groepen = $studenten->groupBy('groep')->map(function ($groepStudenten, $groepNaam) {
-        $aantal = $groepStudenten->count();
-        $gemiddelde = $aantal > 0 ? round($groepStudenten->avg(function ($s) {
-            return $s->rooster ? ($s->aanwezigheid / $s->rooster) * 100 : 0;
-        }), 0) : 0;
-
-        return [
-            'naam' => $groepNaam,
-            'gemiddelde' => $gemiddelde,
-            'aantal' => $aantal,
-        ];
-    })->values();
-
-    return view('docent_dashboard', compact('studenten', 'groepen'));
+    $aanwezigheidController = app(AanwezigheidController::class);
+    $data = $aanwezigheidController->getDocentDashboardData();
+    return view('docent_dashboard', $data);
 })->name('docent.dashboard');
+
+// ➤ Route om student te markeren als gestopt
+Route::post('/docent/student/{studentnummer}/stop', [AanwezigheidController::class, 'stopStudying'])->name('docent.student.stop');
+
+// ➤ Route om alle studenten op te halen voor het logboek
+Route::get('/docent/students/all', [AanwezigheidController::class, 'getAllStudentData'])->name('docent.students.all');
 
 // ➤ Aanwezigheden index (alle studenten)
 Route::get('/aanwezigheden', [AanwezigheidController::class, 'index']);
