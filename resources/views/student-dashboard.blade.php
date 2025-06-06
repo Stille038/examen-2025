@@ -26,11 +26,11 @@
             </p>
 
             <!-- Filters -->
-            <form method="GET" action="{{ route('aanwezigheden.index') }}"> <!-- Via Get wordt invoerveld gestuurd naar controller -->
+            <form method="GET" action="{{ route('aanwezigheden.index') }}">
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
                     <div class="flex flex-col">
                         <x-input-label for="van_week" value="Van week" />
-                        <x-select id="van_week" name="van_week" class="p-2 border rounded-md w-full">
+                        <x-select id="van_week" name="van_week" class="p-2 border rounded-md w-full" onchange="this.form.submit()">
                             @for ($i = 1; $i <= 52; $i++)
                                 <option value="{{ $i }}" {{ (old('van_week', $filters['van_week'] ?? '') == $i) ? 'selected' : '' }}>
                                 Week {{ $i }}
@@ -41,7 +41,7 @@
 
                     <div class="flex flex-col">
                         <x-input-label for="tot_week" value="Tot week" />
-                        <x-select id="tot_week" name="tot_week" class="p-2 border rounded-md w-full">
+                        <x-select id="tot_week" name="tot_week" class="p-2 border rounded-md w-full" onchange="this.form.submit()">
                             @for ($i = 1; $i <= 52; $i++)
                                 <option value="{{ $i }}" {{ (old('tot_week', $filters['tot_week'] ?? '') == $i) ? 'selected' : '' }}>
                                 Week {{ $i }}
@@ -52,17 +52,13 @@
 
                     <div class="flex flex-col">
                         <x-input-label for="jaar" value="Jaar" />
-                        <x-select id="jaar" name="jaar" class="p-2 border rounded-md w-full">
-                            @foreach ([2024, 2025] as $jaar)
+                        <x-select id="jaar" name="jaar" class="p-2 border rounded-md w-full" onchange="this.form.submit()">
+                            @foreach ([2024] as $jaar)
                             <option value="{{ $jaar }}" {{ (old('jaar', $filters['jaar'] ?? '') == $jaar) ? 'selected' : '' }}>
                                 {{ $jaar }}
                             </option>
                             @endforeach
                         </x-select>
-                    </div>
-
-                    <div class="flex items-end">
-                        <x-primary-button class="w-full">Toon periode</x-primary-button>
                     </div>
                 </div>
             </form>
@@ -164,6 +160,11 @@
         });
 
         sections.forEach(section => observer.observe(section));
+
+
+        if (!window.location.search) {
+            document.querySelector('form').submit();
+        }
     });
 </script>
 
