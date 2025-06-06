@@ -26,7 +26,7 @@
             </p>
 
             <!-- Filters -->
-            <form method="GET" action="{{ route('student-dashboard') }}">
+            <form method="GET" action="{{ route('aanwezigheden.index') }}"> <!-- Via Get wordt invoerveld gestuurd naar controller -->
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
                     <div class="flex flex-col">
                         <x-input-label for="van_week" value="Van week" />
@@ -67,7 +67,6 @@
                 </div>
             </form>
 
-            <!-- Statistieken -->
             <!-- Statistieken -->
             <div class="grid grid-cols md:grid-cols-4 gap-4 text-center mb-6">
                 @php
