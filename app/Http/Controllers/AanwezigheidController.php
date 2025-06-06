@@ -15,39 +15,26 @@ class AanwezigheidController extends Controller
             return redirect('/login')->with('error', 'Je bent niet ingelogd.');
         }
 
-        //  Als er niks is ingevuld in de URL (dus geen filters), vul dan standaard de huidige periode in
-        if (!$request->has(['van_week', 'tot_week', 'jaar'])) {
-            $huidigJaar = date('Y');
-            $huidigeWeek = date('W');
-
-            // Laat standaard de laatste 4 weken van het huidige jaar zien
-            $request->merge([
-                'van_week' => 1,
-                'tot_week' => 52,
-                'jaar' => date('Y'),
-            ]);
-        }
-
-        //  info uit front-end komt hier heen 
+        // 🔎 Haal filters op of stel defaults in
         $filters = [
             'van_week' => (int) $request->input('van_week', 1),
             'tot_week' => (int) $request->input('tot_week', 52),
             'jaar' => (int) $request->input('jaar', date('Y')),
         ];
 
-        //  Corrigeer als van week tot week niet klopt, draaid die dat met elkaar zodat het wel klopt. 
+        // 🔄 Corrigeer als weken verkeerd om zijn
         if ($filters['van_week'] > $filters['tot_week']) {
             [$filters['van_week'], $filters['tot_week']] = [$filters['tot_week'], $filters['van_week']];
         }
 
-        // Pas filters toe op de query
-        $records = Aanwezigheid::where('studentnummer', $studentnummer) // alle rijen van ingelogde student 
-            ->whereBetween('week', [$filters['van_week'], $filters['tot_week']]) // filter zodat we data terug krijgen die gefilter is 
-            ->where('jaar', $filters['jaar']) // dan filter die per jaar. 
-            ->get(); // alle resultaten haalt die op binnen recors 
+        // ✅ Filter toepassen op week & jaar
+        $records = Aanwezigheid::where('studentnummer', $studentnummer)
+            ->whereBetween('week', [$filters['van_week'], $filters['tot_week']])
+            ->where('jaar', $filters['jaar'])
+            ->get();
 
-        //  Berekeningen op gefilterde data
-        $totaal_weken = $records->count(); // x
+        $totaal_weken = $records->count();
+
         $gemiddelde = $records->avg(function ($r) {
             return $r->rooster > 0 ? ($r->aanwezigheid / $r->rooster) * 100 : 0;
         });
@@ -60,7 +47,7 @@ class AanwezigheidController extends Controller
             return $r->rooster > 0 && ($r->aanwezigheid / $r->rooster) * 100 < 50;
         })->count();
 
-        //  Per-week percentages
+        // 📅 Aanwezigheid per week
         $aanwezigheidPerWeek = [];
         foreach ($records as $record) {
             if ($record->week && $record->rooster > 0) {
@@ -68,7 +55,7 @@ class AanwezigheidController extends Controller
             }
         }
 
-        //  Stuur alles naar de view
+        // 🔁 Terugsturen naar de blade
         return view('student-dashboard', [
             'studentnummer' => $studentnummer,
             'student' => $records->first(),
