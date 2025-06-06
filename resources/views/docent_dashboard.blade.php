@@ -173,17 +173,9 @@
         <div class="bg-white shadow-md rounded-lg p-6">
             <h2 class="text-2xl font-semibold text-gray-800 mb-2">Groepsoverzicht Aanwezigheid</h2>
 
-            {{-- Groepsrapportage Download Knop - tijdelijk uitgeschakeld tot PDF functionaliteit is geïmplementeerd --}}
-            {{-- @if(isset($groepen[0]['naam']))
-                <a href="{{ route('rapportage.groep.pdf', $groepen[0]['naam']) }}"
-                   class="inline-block bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md transition-colors mb-4">
-                    Groepsrapportage Downloaden
-                </a>
-            @endif --}}
-
             {{-- Logboek Knop --}}
             <button @click="openLogbook()"
-                    class="inline-block bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md transition-colors mb-4 ml-4">
+                    class="inline-block bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md transition-colors mb-4">
                 Logboek Studenten
             </button>
 
@@ -308,11 +300,11 @@
                                 {{-- Acties --}}
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                     {{-- Download PDF Icon --}}
-                                    <a :href="'/docent/rapportage/student/' + student.studentnummer"
+                                    <a :href="'/docent/rapportage/student/' + student.studentnummer + '/pdf'"
                                        class="text-blue-600 hover:text-blue-900 inline-flex items-center justify-center w-5 h-5" title="Download PDF">
                                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
                                             <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0-4.5-4.5m4.5 4.5V3" />
-                                          </svg>
+                                        </svg>
                                     </a>
                                     
                                     {{-- Stop Studeren Icon --}}
@@ -343,6 +335,7 @@
                             <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Groep</th>
                             <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Gemiddelde</th>
                             <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aantal studenten</th>
+                            <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acties</th>
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
@@ -351,6 +344,14 @@
                                 <td class="px-6 py-4 whitespace-nowrap">{{ $groep['naam'] }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap">{{ $groep['gemiddelde'] }}%</td>
                                 <td class="px-6 py-4 whitespace-nowrap">{{ $groep['aantal'] }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    <a href="/docent/rapportage/groep/{{ urlencode($groep['naam']) }}/pdf"
+                                       class="text-blue-600 hover:text-blue-900 inline-flex items-center justify-center w-5 h-5" title="Download Groepsrapportage">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0-4.5-4.5m4.5 4.5V3" />
+                                        </svg>
+                                    </a>
+                                </td>
                             </tr>
                         @endforeach
                     </tbody>
