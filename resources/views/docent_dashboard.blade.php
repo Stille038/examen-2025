@@ -23,7 +23,7 @@
                     switch (this.tab) {
                         case 'overzicht': 
                              // Op het overzicht tabblad tonen we alle studenten, filtering gebeurt via de dropdowns.
-                             return student.status === 'Actief' || student.status === 'Risico';
+                             return true; // Toon alle studenten op het overzicht tabblad
                         case 'risico': return student.status === 'Risico';
                         case 'top': return student.status === 'Actief' && studentPercentage > 80; // Top is onderdeel van Actief
                         case 'gestopt': return student.status === 'Gestopt';
@@ -106,6 +106,7 @@
             this.showLogbookModal = true;
             this.logbookLoading = true;
             this.logbookError = '';
+
             try {
                 // Haal alle studenten op via de nieuwe route
                 const response = await fetch('/docent/students/all');
@@ -121,6 +122,8 @@
 
                     student.percentage = rooster > 0 ? Math.round((aanwezigheid / rooster) * 100) : 0;
                     student.status = rooster === 0 ? 'Gestopt' : (student.percentage < 50 ? 'Risico' : 'Actief');
+                    // Voeg hier weer 'laatste_week' met 'N/A' toe, net als in de controller
+                    student.laatste_week = 'N/A';
                     return student;
                 });
 
@@ -246,8 +249,10 @@
                     <thead class="bg-gray-50">
                         <tr>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Student</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Groep</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aanwezigheid</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Laatste week</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rooster</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Percentage</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acties</th>
                         </tr>
@@ -260,6 +265,13 @@
                                     <div class="text-sm font-medium text-gray-900" x-text="student.naam ?? student.studentnummer"></div>
                                     <div class="text-sm text-gray-500" x-text="student.studentnummer"></div>
                                 </td>
+                                {{-- Toon Groep --}}
+                                <td class="px-6 py-4 whitespace-nowrap" x-text="student.groep"></td>
+                                {{-- Aanwezigheid (uren) --}}
+                                <td class="px-6 py-4 whitespace-nowrap" x-text="student.aanwezigheid"></td>
+                                {{-- Rooster (uren) --}}
+                                <td class="px-6 py-4 whitespace-nowrap" x-text="student.rooster"></td>
+                                {{-- Percentage met kleurcodering --}}
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <span :class="{
                                         'bg-green-200 text-green-800': student.percentage > 80,
@@ -267,9 +279,7 @@
                                         'bg-yellow-200 text-yellow-800': student.percentage >= 50 && student.percentage <= 80
                                     }" class="px-2 py-1 rounded" x-text="student.percentage + '%'"></span>
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <span class="bg-gray-200 text-gray-800 px-2 py-1 rounded" x-text="student.laatste_week ?? student.percentage + '%'"></span>
-                                </td>
+                                {{-- Status met kleurcodering --}}
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <span :class="{
                                         'bg-gray-100 text-gray-800': student.status === 'Gestopt',
@@ -277,17 +287,24 @@
                                         'bg-green-100 text-green-800': student.status === 'Actief'
                                     }" class="px-2 py-1 rounded" x-text="student.status"></span>
                                 </td>
+                                {{-- Acties --}}
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    {{-- Download PDF Icon --}}
                                     <a :href="'/docent/rapportage/student/' + student.studentnummer"
-                                       class="text-blue-600 hover:text-blue-900">
-                                        Download PDF
+                                       class="text-blue-600 hover:text-blue-900 inline-flex items-center justify-center w-5 h-5" title="Download PDF">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0-4.5-4.5m4.5 4.5V3" />
+                                          </svg>
                                     </a>
-                                    {{-- Nieuwe knop voor stoppen met studeren --}}
+                                    
+                                    {{-- Stop Studeren Icon --}}
                                     {{-- Toon de knop alleen als de student niet gestopt is --}}
                                     <template x-if="student.status !== 'Gestopt'">
                                         <button @click="stopStudying(student.studentnummer)"
-                                                class="ml-2 text-red-600 hover:text-red-900 focus:outline-none">
-                                            Stop Studeren
+                                                class="ml-2 text-red-600 hover:text-red-900 focus:outline-none inline-flex items-center justify-center w-5 h-5" title="Student markeren als gestopt">
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l9.17 9.17a1.5 1.5 0 0 1-2.12 2.12L12 11.88l-9.17 9.17a1.5 1.5 0 0 1-2.12-2.12L9.88 10l-9.17-9.17A1.5 1.5 0 0 1 3.81 6.88L12 15l9.17-9.17a1.5 1.5 0 0 1 2.12 2.12L14.74 9z" />
+                                              </svg>
                                         </button>
                                     </template>
                                 </td>
@@ -340,7 +357,13 @@
 
                 <!-- Modal header -->
                 <div class="flex justify-between items-center pb-3">
-                    <h3 class="text-2xl font-bold text-gray-900">Logboek Alle Studenten</h3>
+                    <h3 class="text-2xl font-bold text-gray-900">Logboek Alle Studenten
+                         {{-- Toon hier de datum/tijd van openen --}}
+                        {{-- Verwijder de datum/tijd weergave --}}
+                        {{-- <span x-show="logbookOpenTime" class="text-base font-normal text-gray-600">
+                            (Opgehaald op: <span x-text="logbookOpenTime"></span>)
+                        </span> --}}
+                    </h3>
                     <button @click="closeLogbook()" class="text-gray-400 hover:text-gray-600 focus:outline-none">
                         <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
@@ -362,6 +385,7 @@
                                     <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Percentage</th>
                                     <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                                     <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Groep</th>
+                                    {{-- Voeg de Laatste week kolom terug toe in de modal --}}
                                     <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Laatste week</th>
                                     {{-- Voeg hier eventueel meer kolommen toe --}}
                                 </tr>
@@ -391,6 +415,7 @@
                                             }" class="px-2 py-1 rounded" x-text="student.status"></span>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap" x-text="student.groep"></td>
+                                        {{-- Voeg de Laatste week cel terug toe in de modal --}}
                                         <td class="px-6 py-4 whitespace-nowrap" x-text="student.laatste_week ?? 'N/A'"></td>
                                         {{-- Voeg hier eventueel meer cellen toe --}}
                                     </tr>
