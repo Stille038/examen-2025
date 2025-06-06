@@ -34,7 +34,7 @@ class AanwezigheidController extends Controller
             ->get(); // alle resultaten haalt die op binnen recors 
 
         //  Berekeningen op gefilterde data
-        $totaal_weken = $records->count(); // x
+        $totaal_weken = $records->count(); // 
         $gemiddelde = $records->avg(function ($r) {
             return $r->rooster > 0 ? ($r->aanwezigheid / $r->rooster) * 100 : 0;
         });
