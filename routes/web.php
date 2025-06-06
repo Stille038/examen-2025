@@ -10,11 +10,8 @@ use App\Http\Controllers\AanwezigheidController;
 Route::post('/custom-login', [CustomLoginController::class, 'login'])->name('custom.login');
 Route::redirect('/', '/login');
 
-// ➤ Student dashboard (data via controller, NIET via closure)
 Route::get('/student-dashboard', [AanwezigheidController::class, 'index'])->name('student-dashboard');
-
-// ➤ Individueel studentenscherm (alleen als je iets extra's wilt)
-Route::view('/individueel-student', 'individueel-student')->name('individueel-student');
+Route::get('/individueel-student', [AanwezigheidController::class, 'individueel'])->name('individueel-student');
 
 // ➤ Aanwezighedenoverzicht voor docenten
 Route::get('/aanwezigheden', [AanwezigheidController::class, 'index'])->name('aanwezigheden.index');

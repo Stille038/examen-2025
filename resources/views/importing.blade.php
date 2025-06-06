@@ -20,12 +20,7 @@
 
             <form action="{{ route('excel.upload') }}" method="POST" enctype="multipart/form-data">
                 @csrf
-                <label for="file-upload" class="cursor-pointer mt-4 px-4 py-2 bg-secondary-light  hover:bg-blue-600 text-white text-sm rounded inline-block">
-                    📁 Bestanden selecteren
-                </label>
-
                 <input id="file-upload" type="file" name="bestand" accept=".xlsx,.ods" class="mt-4">
-
 
                 @if ($errors->has('bestand'))
     <div class="text-red-600 mt-2">
