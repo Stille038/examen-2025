@@ -18,7 +18,7 @@
 <div class="antialiased min-h-screen bg-cover bg-center" style="font-family: 'Cormorant Garamond', serif;">
     <div class="h-full min-h-screen flex flex-wrap lg:flex-nowrap px-6 py-10">
         <div class="w-full border border-gray-300 shadow-xl flex flex-col bg-gray-100 rounded-2xl p-6">
-            
+
             <!-- Titel en info -->
             <h1 class="text-2xl font-semibold mb-2">Mijn Aanwezigheid</h1>
             <p class="text-gray-600 mb-4">
@@ -33,9 +33,9 @@
                         <x-select id="van_week" name="van_week" class="p-2 border rounded-md w-full">
                             @for ($i = 1; $i <= 52; $i++)
                                 <option value="{{ $i }}" {{ (old('van_week', $filters['van_week'] ?? '') == $i) ? 'selected' : '' }}>
-                                    Week {{ $i }}
+                                Week {{ $i }}
                                 </option>
-                            @endfor
+                                @endfor
                         </x-select>
                     </div>
 
@@ -44,9 +44,9 @@
                         <x-select id="tot_week" name="tot_week" class="p-2 border rounded-md w-full">
                             @for ($i = 1; $i <= 52; $i++)
                                 <option value="{{ $i }}" {{ (old('tot_week', $filters['tot_week'] ?? '') == $i) ? 'selected' : '' }}>
-                                    Week {{ $i }}
+                                Week {{ $i }}
                                 </option>
-                            @endfor
+                                @endfor
                         </x-select>
                     </div>
 
@@ -54,9 +54,9 @@
                         <x-input-label for="jaar" value="Jaar" />
                         <x-select id="jaar" name="jaar" class="p-2 border rounded-md w-full">
                             @foreach ([2024, 2025] as $jaar)
-                                <option value="{{ $jaar }}" {{ (old('jaar', $filters['jaar'] ?? '') == $jaar) ? 'selected' : '' }}>
-                                    {{ $jaar }}
-                                </option>
+                            <option value="{{ $jaar }}" {{ (old('jaar', $filters['jaar'] ?? '') == $jaar) ? 'selected' : '' }}>
+                                {{ $jaar }}
+                            </option>
                             @endforeach
                         </x-select>
                     </div>
@@ -68,10 +68,21 @@
             </form>
 
             <!-- Statistieken -->
-           <!-- Statistieken -->
+            <!-- Statistieken -->
             <div class="grid grid-cols md:grid-cols-4 gap-4 text-center mb-6">
-                <div class="bg-white rounded-lg shadow p-4 border border-yellow-400">
-                    <p class="text-3xl font-bold text-yellow-400">{{ $gemiddelde ?? '-' }}%</p>
+                @php
+                $borderColor = match (true) {
+                $gemiddelde == 100 => 'border-purple-600 text-purple-600',
+                $gemiddelde >= 95 => 'border-blue-500 text-blue-500',
+                $gemiddelde >= 80 => 'border-green-500 text-green-500',
+                $gemiddelde >= 65 => 'border-yellow-400 text-yellow-400',
+                $gemiddelde >= 50 => 'border-orange-400 text-orange-400',
+                $gemiddelde > 0 => 'border-red-500 text-red-500',
+                default => 'border-red-800 text-red-800',
+                };
+                @endphp
+                <div class="bg-white rounded-lg shadow p-4 border {{ $borderColor }} ">
+                    <p class="text-3xl font-bold {{ $borderColor }}">{{ $gemiddelde ?? '-' }}%</p>
                     <p class="text-sm text-gray-600">Gemiddelde aanwezigheid</p>
                 </div>
                 <div class="bg-white rounded-lg shadow p-4 border border-red-200">
@@ -92,32 +103,46 @@
             <h3 class="text-xl font-semibold mt-8 mb-4">Aanwezigheid per week</h3>
             <div class="flex flex-wrap gap-3 fade-in">
                 @foreach ($aanwezigheidPerWeek as $week => $percentage)
-                    @php
-                        $bgColor = match (true) {
-                            $percentage == 100     => 'bg-purple-600',
-                            $percentage >= 95      => 'bg-blue-500',
-                            $percentage >= 80      => 'bg-green-500',
-                            $percentage >= 65      => 'bg-yellow-400',
-                            $percentage >= 50      => 'bg-orange-400',
-                            $percentage > 0        => 'bg-red-500',
-                            default                => 'bg-red-800',
-                        };
-                    @endphp
-                    <div class="{{ $bgColor }} text-white px-10 py-8 rounded-md shadow transform transition-transform duration-200 hover:scale-105">
-                        {{ $percentage }}%<br><span class="text-xs">W{{ $week }}</span>
-                    </div>
+                @php
+                $bgColor = match (true) {
+                $percentage == 100 => 'bg-purple-600',
+                $percentage >= 95 => 'bg-blue-500',
+                $percentage >= 80 => 'bg-green-500',
+                $percentage >= 65 => 'bg-yellow-400',
+                $percentage >= 50 => 'bg-orange-400',
+                $percentage > 0 => 'bg-red-500',
+                default => 'bg-red-800',
+                };
+                @endphp
+                <div class="{{ $bgColor }} text-white px-10 py-8 rounded-md shadow transform transition-transform duration-200 hover:scale-105">
+                    {{ $percentage }}%<br><span class="text-xs">W{{ $week }}</span>
+                </div>
                 @endforeach
             </div>
 
             <!-- Legenda -->
             <div class="mt-6 border-t pt-4 text-sm text-gray-600 flex flex-wrap gap-4">
-                <div class="flex items-center gap-1"><div class="w-4 h-4 bg-purple-600 rounded"></div> Perfect (100%)</div>
-                <div class="flex items-center gap-1"><div class="w-4 h-4 bg-blue-500 rounded"></div> Excellent (95–99%)</div>
-                <div class="flex items-center gap-1"><div class="w-4 h-4 bg-green-500 rounded"></div> Goed (80–94%)</div>
-                <div class="flex items-center gap-1"><div class="w-4 h-4 bg-yellow-400 rounded"></div> Redelijk (65–79%)</div>
-                <div class="flex items-center gap-1"><div class="w-4 h-4 bg-orange-400 rounded"></div> Onvoldoende (50–64%)</div>
-                <div class="flex items-center gap-1"><div class="w-4 h-4 bg-red-500 rounded"></div> Slecht (1–49%)</div>
-                <div class="flex items-center gap-1"><div class="w-4 h-4 bg-red-800 rounded"></div> Afwezig (0%)</div>
+                <div class="flex items-center gap-1">
+                    <div class="w-4 h-4 bg-purple-600 rounded"></div> Perfect (100%)
+                </div>
+                <div class="flex items-center gap-1">
+                    <div class="w-4 h-4 bg-blue-500 rounded"></div> Excellent (95–99%)
+                </div>
+                <div class="flex items-center gap-1">
+                    <div class="w-4 h-4 bg-green-500 rounded"></div> Goed (80–94%)
+                </div>
+                <div class="flex items-center gap-1">
+                    <div class="w-4 h-4 bg-yellow-400 rounded"></div> Redelijk (65–79%)
+                </div>
+                <div class="flex items-center gap-1">
+                    <div class="w-4 h-4 bg-orange-400 rounded"></div> Onvoldoende (50–64%)
+                </div>
+                <div class="flex items-center gap-1">
+                    <div class="w-4 h-4 bg-red-500 rounded"></div> Slecht (1–49%)
+                </div>
+                <div class="flex items-center gap-1">
+                    <div class="w-4 h-4 bg-red-800 rounded"></div> Afwezig (0%)
+                </div>
             </div>
 
         </div>
@@ -125,17 +150,19 @@
 </div>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
+    document.addEventListener('DOMContentLoaded', function() {
         const sections = document.querySelectorAll('.fade-in');
 
         const observer = new IntersectionObserver((entries, observer) => {
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
                     entry.target.classList.add('visible');
-                    observer.unobserve(entry.target); 
+                    observer.unobserve(entry.target);
                 }
             });
-        }, { threshold: 0.6 }); 
+        }, {
+            threshold: 0.6
+        });
 
         sections.forEach(section => observer.observe(section));
     });
