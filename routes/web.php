@@ -5,6 +5,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ExcelUploadController;
 use App\Http\Controllers\CustomLoginController;
 use App\Http\Controllers\AanwezigheidController;
+use App\Http\Controllers\ReportController;
 
 // ➤ Login functionaliteit
 Route::post('/custom-login', [CustomLoginController::class, 'login'])->name('custom.login');
@@ -39,5 +40,11 @@ Route::post('/docent/student/{studentnummer}/stop', [AanwezigheidController::cla
 
 // ➤ Route om alle studenten op te halen voor het logboek
 Route::get('/docent/students/all', [AanwezigheidController::class, 'getAllStudentData'])->name('docent.students.all');
+
+// ➤ Route voor het downloaden van student PDF rapporten
+Route::get('/docent/rapportage/student/{studentnummer}/pdf', [ReportController::class, 'downloadStudentReportPdf'])->name('docent.student.pdf');
+
+// ➤ Route voor het downloaden van groep PDF rapporten
+Route::get('/docent/rapportage/groep/{groepnaam}/pdf', [ReportController::class, 'downloadGroupReportPdf'])->name('docent.groep.pdf');
 
 require __DIR__ . '/auth.php';

@@ -1,116 +1,103 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Groepsrapportage {{ $groepNaam }}</title>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-    {{-- Tailwind CSS equivalent styles for PDF --}}
+    <meta charset="utf-8">
+    <title>Groepsrapportage - {{ $groepnaam }}</title>
     <style>
         body {
-            font-family: 'DejaVu Sans', sans-serif;
+            font-family: DejaVu Sans, sans-serif;
             font-size: 12px;
-            line-height: 1.6;
-            color: #1a202c; /* Equivalent to text-gray-900 */
-            margin: 0;
-            padding: 0;
-        }
-        .container {
-            padding: 24px; /* Equivalent to p-6 */
-            margin: 24px; /* Equivalent to m-6 or mx-auto with some margin */
-            background-color: #ffffff; /* Equivalent to bg-white */
-            border: 1px solid #e2e8f0; /* Equivalent to border border-gray-200 */
-            border-radius: 8px; /* Equivalent to rounded-lg */
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); /* Equivalent to shadow-md */
+            line-height: 1.4;
         }
         .header {
             text-align: center;
             margin-bottom: 20px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid #e2e8f0; /* subtle separator */
         }
         .header h1 {
-            font-size: 24px; /* Equivalent to text-2xl */
-            font-weight: 600; /* Equivalent to font-semibold */
-            color: #1a202c; /* Equivalent to text-gray-800 */
-            margin: 0;
+            font-size: 24px;
+            margin-bottom: 5px;
         }
-        /* Table styles based on the dashboard table */
-        .student-table {
+        .header p {
+            font-size: 14px;
+            color: #666;
+        }
+        table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 20px; /* Equivalent to mt-4 or mt-6 */
+            margin-bottom: 20px;
         }
-        .student-table th,
-        .student-table td {
-            border: 1px solid #e2e8f0; /* Equivalent to border-gray-200 */
-            padding: 12px 16px; /* Equivalent to px-4 py-3 */
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
             text-align: left;
         }
-        .student-table th {
-            background-color: #edf2f7; /* Equivalent to bg-gray-50 */
-            font-weight: 600; /* Equivalent to font-medium */
-            color: #718096; /* Equivalent to text-gray-500 */
-            text-transform: uppercase;
-            font-size: 10px; /* Equivalent to text-xs */
+        th {
+            background-color: #f5f5f5;
+            font-weight: bold;
         }
-        .student-table td {
-            font-size: 14px; /* Equivalent to text-sm */
-            color: #2d3748; /* Equivalent to text-gray-900 */
+        .summary {
+            margin-bottom: 20px;
+            padding: 10px;
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
         }
-         .status {
-            font-weight: 600; /* Equivalent to font-semibold */
-            padding: 4px 8px; /* Equivalent to px-2 py-1 */
-            border-radius: 4px; /* Equivalent to rounded */
-            display: inline-block;
-            font-size: 12px; /* Equivalent to text-sm */
+        .status-risico {
+            color: #dc2626;
         }
-        .status.risico {
-            background-color: #fee2e2; /* Equivalent to bg-red-100 */
-            color: #c53030; /* Equivalent to text-red-800 */
+        .status-actief {
+            color: #059669;
         }
-        .status.actief {
-            background-color: #c6f6d5; /* Equivalent to bg-green-100 */
-            color: #2f855a; /* Equivalent to text-green-800 */
+        .status-gestopt {
+            color: #6b7280;
         }
-         .status.gestopt {
-            background-color: #edf2f7; /* Equivalent to bg-gray-100 */
-            color: #4a5568; /* Equivalent to text-gray-700 */
+        .footer {
+            margin-top: 30px;
+            text-align: center;
+            font-size: 10px;
+            color: #666;
         }
-
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>Rapportage voor Groep: {{ $groepNaam }}</h1>
-        </div>
+    <div class="header">
+        <h1>Groepsrapportage</h1>
+        <p>Groep: {{ $groepnaam }}</p>
+        <p>Datum: {{ now()->format('d-m-Y') }}</p>
+    </div>
 
-        <table class="student-table">
-            <thead>
-                <tr>
-                    <th>Studentnummer</th>
-                    <th>Aanwezigheid</th>
-                    <th>Rooster</th>
-                    <th>Gemiddelde (%)</th>
-                    <th>Status</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach($studenten as $student)
-                    @php
-                        $gem = $student->rooster && $student->rooster > 0 ? round(($student->aanwezigheid / $student->rooster) * 100) : 0;
-                        $status = $student->rooster == 0 ? 'Gestopt' : ($gem < 50 ? 'Risico' : 'Actief');
-                        $statusClass = $student->rooster == 0 ? 'gestopt' : ($gem < 50 ? 'risico' : 'actief');
-                    @endphp
-                    <tr>
-                        <td>{{ $student->studentnummer }}</td>
-                        <td>{{ $student->aanwezigheid ?? 0 }}</td>
-                        <td>{{ $student->rooster ?? 0 }}</td>
-                        <td>{{ $gem }}%</td>
-                        <td><span class="status {{ $statusClass }}">{{ $status }}</span></td>
-                    </tr>
-                @endforeach
-            </tbody>
-        </table>
+    <div class="summary">
+        <h2>Groepsoverzicht</h2>
+        <p>Gemiddelde aanwezigheid: {{ $groepGemiddelde }}%</p>
+        <p>Aantal studenten: {{ count($studenten) }}</p>
+        <p>Risicostudenten (< 50%): {{ $risicoStudenten }}</p>
+        <p>Toppresteerders (> 80%): {{ $topStudenten }}</p>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Studentnummer</th>
+                <th>Aanwezigheid</th>
+                <th>Rooster</th>
+                <th>Percentage</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach($studenten as $student)
+            <tr>
+                <td>{{ $student->studentnummer }}</td>
+                <td>{{ $student->aanwezigheid }}</td>
+                <td>{{ $student->rooster }}</td>
+                <td>{{ $student->percentage }}%</td>
+                <td class="status-{{ strtolower($student->status) }}">{{ $student->status }}</td>
+            </tr>
+            @endforeach
+        </tbody>
+    </table>
+
+    <div class="footer">
+        <p>Dit rapport is automatisch gegenereerd op {{ now()->format('d-m-Y H:i:s') }}</p>
     </div>
 </body>
 </html> 
