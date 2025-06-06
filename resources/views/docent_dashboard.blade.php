@@ -4,164 +4,182 @@
 
 @section('content')
 <div class="container py-8">
-    {{-- Wrap filter options, student list, modal and other elements in a new div with Alpine data --}}
-    <div x-data="{ 
-        selectedGroep: 'All', 
-        selectedPeriode: 'Laatste 4 weken', 
-        selectedFilterOp: 'Alle studenten', 
-        zoekStudentTerm: '', 
-        allStudenten: {{ Js::from($studenten) }}, 
-        get filteredStudenten() { 
-            return this.allStudenten.filter(student => {
-                const matchesGroep = this.selectedGroep === 'All' || (student.groep === this.selectedGroep);
-                const matchesPeriode = true; // Tijdelijk altijd true, implementatie afhankelijk van backend data
-                const studentPercentage = student.percentage; // Nu direct beschikbaar van controller
-                let matchesFilterOp = true;
 
-                // Filteren op status (actief, risico, gestopt) gebaseerd op de navigatietabs
-                const matchesStatusTab = () => {
-                    switch (this.tab) {
-                        case 'overzicht': 
-                             // Op het overzicht tabblad tonen we alle studenten, filtering gebeurt via de dropdowns.
-                             return true; // Toon alle studenten op het overzicht tabblad
-                        case 'risico': return student.status === 'Risico';
-                        case 'top': return student.status === 'Actief' && studentPercentage > 80; // Top is onderdeel van Actief
-                        case 'gestopt': return student.status === 'Gestopt';
-                        default: return true;
-                    }
-                };
+    {{-- Store student and group data in hidden input fields --}}
+    <input type="hidden" id="studenten-data" value='{{ str_replace("'", "\'", json_encode($studenten)) }}'>
+    <input type="hidden" id="groepen-data" value='{{ str_replace("'", "\'", json_encode($groepen)) }}'>
 
-                switch (this.selectedFilterOp) {
-                    case '0-20%': matchesFilterOp = studentPercentage >= 0 && studentPercentage <= 20; break;
-                    case '20-50%': matchesFilterOp = studentPercentage > 20 && studentPercentage <= 50; break;
-                    case '50-80%': matchesFilterOp = studentPercentage > 50 && studentPercentage <= 80; break;
-                    case '> 80%': matchesFilterOp = studentPercentage > 80; break;
-                    case '< 50%': matchesFilterOp = studentPercentage < 50; break;
-                    case 'Alle studenten': matchesFilterOp = true; break;
-                    default: matchesFilterOp = true;
-                }
+    {{-- Define the Alpine.js component data and methods --}}
+    <script>
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('docentDashboardData', () => ({
+                // Initialize all required state properties
+                tab: 'overzicht',
+                selectedGroep: 'All',
+                selectedPeriode: 'Laatste 4 weken',
+                selectedFilterOp: 'Alle studenten',
+                zoekStudentTerm: '',
+                showLogbookModal: false,
+                logbookStudents: [],
+                logbookLoading: false,
+                logbookError: '',
+                allStudenten: [], // Initialize as empty, load from hidden field in init()
+                allGroepen: [], // Initialize as empty, load from hidden field in init()
 
-                const zoekTerm = this.zoekStudentTerm.toLowerCase();
-                const matchesZoekStudent = zoekTerm === '' || 
-                    (student.naam && student.naam.toLowerCase().includes(zoekTerm)) || 
-                    (student.studentnummer && student.studentnummer.toLowerCase().includes(zoekTerm));
+                // Computed property for filtered students
+                get filteredStudenten() {
+                    return this.allStudenten.filter(student => {
+                        const matchesGroep = this.selectedGroep === 'All' || (student.groep === this.selectedGroep);
+                        const matchesPeriode = true; // Tijdelijk altijd true, implementatie afhankelijk van backend data
+                        const studentPercentage = student.percentage || 0;
+                        let matchesFilterOp = true;
 
-                // Combineer alle filters en de status tab filter
-                return matchesGroep && matchesPeriode && matchesFilterOp && matchesZoekStudent && matchesStatusTab();
-            }); 
-        },
-        // Functie om een student te markeren als gestopt - NU BINNEN X-DATA
-        stopStudying: async function(studentnummer) {
-            if (confirm(`Weet je zeker dat je student ${studentnummer} wilt markeren als gestopt?`)) {
-                try {
-                    const response = await fetch(`/docent/student/${studentnummer}/stop`, {
-                        method: 'POST',
-                        headers: {
-                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                            'Content-Type': 'application/json'
+                        // Filteren op status (actief, risico, gestopt) gebaseerd op de navigatietabs
+                        const matchesStatusTab = () => {
+                            switch (this.tab) {
+                                case 'overzicht': return true;
+                                case 'risico': return student.status === 'Risico';
+                                case 'top': return student.status === 'Actief' && studentPercentage > 80;
+                                case 'gestopt': return student.status === 'Gestopt';
+                                default: return true;
+                            }
+                        };
+
+                        switch (this.selectedFilterOp) {
+                            case '0-20%': matchesFilterOp = studentPercentage >= 0 && studentPercentage <= 20; break;
+                            case '20-50%': matchesFilterOp = studentPercentage > 20 && studentPercentage <= 50; break;
+                            case '50-80%': matchesFilterOp = studentPercentage > 50 && studentPercentage <= 80; break;
+                            case '> 80%': matchesFilterOp = studentPercentage > 80; break;
+                            case '< 50%': matchesFilterOp = studentPercentage < 50; break;
+                            case 'Alle studenten': matchesFilterOp = true; break;
+                            default: matchesFilterOp = true;
                         }
+
+                        const zoekTerm = this.zoekStudentTerm.toLowerCase();
+                        const matchesZoekStudent = zoekTerm === '' ||
+                            (student.naam && student.naam.toLowerCase().includes(zoekTerm)) ||
+                            (student.studentnummer && student.studentnummer.toLowerCase().includes(zoekTerm));
+
+                        return matchesGroep && matchesPeriode && matchesFilterOp && matchesZoekStudent && matchesStatusTab();
                     });
+                },
 
-                    const data = await response.json();
+                // Methods
+                stopStudying: async function(studentnummer) {
+                    if (confirm(`Weet je zeker dat je student ${studentnummer} wilt markeren als gestopt?`)) {
+                        try {
+                            const response = await fetch(`/docent/student/${studentnummer}/stop`, {
+                                method: 'POST',
+                                headers: {
+                                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                    'Content-Type': 'application/json'
+                                }
+                            });
 
-                    if (data.success) {
-                        alert(`Student ${studentnummer} succesvol gemarkeerd als gestopt.`);
-                        
-                        // Update de lokale student data in Alpine.js
-                        // Vind de student in de allStudenten array en update de status/rooster
-                        const studentIndex = this.allStudenten.findIndex(s => s.studentnummer === studentnummer);
-                        if (studentIndex !== -1) {
-                            // Maak een kopie om Alpine.js te laten reageren
-                            const updatedStudent = { ...this.allStudenten[studentIndex] };
-                            updatedStudent.rooster = 0;
-                            updatedStudent.percentage = 0; // Percentage na stoppen is 0
-                            updatedStudent.status = 'Gestopt';
-                            
-                            // Vervang de student in de array om Alpine.js te trigegeren
-                            // Gebruik splice om de array echt te muteren, wat Alpine.js detecteert
-                            this.allStudenten.splice(studentIndex, 1, updatedStudent);
+                            const data = await response.json();
 
-                             // Update filteredStudenten door een dummy mutatie of re-assign
-                             // Dit zorgt ervoor dat de gefilterde lijst wordt herberekend
-                            this.allStudenten = [...this.allStudenten];
+                            if (data.success) {
+                                alert(`Student ${studentnummer} succesvol gemarkeerd als gestopt.`);
+
+                                const studentIndex = this.allStudenten.findIndex(s => s.studentnummer === studentnummer);
+                                if (studentIndex !== -1) {
+                                    const updatedStudent = { ...this.allStudenten[studentIndex] };
+                                    updatedStudent.rooster = 0;
+                                    updatedStudent.percentage = 0;
+                                    updatedStudent.status = 'Gestopt';
+                                    this.allStudenten.splice(studentIndex, 1, updatedStudent);
+                                    this.allStudenten = [...this.allStudenten]; // Trigger Alpine reactivity
+                                }
+                            } else {
+                                alert('Er ging iets mis: ' + data.message);
+                            }
+                        } catch (error) {
+                            console.error('Fout bij markeren als gestopt:', error);
+                            alert('Er trad een fout op bij het verwerken van het verzoek.');
+                        }
+                    }
+                },
+
+                openLogbook: async function() {
+                    this.showLogbookModal = true;
+                    this.logbookLoading = true;
+                    this.logbookError = '';
+
+                    try {
+                        const response = await fetch('/docent/students/all');
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                        const data = await response.json();
+                        this.logbookStudents = data.map(student => {
+                            const rooster = parseInt(student.rooster) || 0;
+                            const aanwezigheid = parseInt(student.aanwezigheid) || 0;
+                            student.percentage = rooster > 0 ? Math.round((aanwezigheid / rooster) * 100) : 0;
+                            student.status = rooster === 0 ? 'Gestopt' : (student.percentage < 50 ? 'Risico' : 'Actief');
+                            student.laatste_week = 'N/A';
+                            return student;
+                        });
+                    } catch (error) {
+                        console.error('Fout bij ophalen logboek data:', error);
+                        this.logbookError = 'Kon logboek data niet ophalen.';
+                    } finally {
+                        this.logbookLoading = false;
+                    }
+                },
+
+                closeLogbook: function() {
+                    this.showLogbookModal = false;
+                    this.logbookStudents = [];
+                    this.logbookError = '';
+                },
+
+                // Initialize data from hidden input
+                init() {
+                    try {
+                        const studentenDataElement = document.getElementById('studenten-data');
+                        const groepenDataElement = document.getElementById('groepen-data');
+
+                        if (studentenDataElement) {
+                            this.allStudenten = JSON.parse(studentenDataElement.getAttribute('value'));
+                            console.log('Alpine.js initialized with', this.allStudenten.length, 'students');
+                        } else {
+                            console.error('Hidden student data element not found!');
+                            this.allStudenten = [];
                         }
 
-                    } else {
-                        alert('Er ging iets mis: ' + data.message);
+                        if (groepenDataElement) {
+                            this.allGroepen = JSON.parse(groepenDataElement.getAttribute('value'));
+                            console.log('Initialized with groups:', this.allGroepen);
+                        } else {
+                            console.error('Hidden group data element not found!');
+                            this.allGroepen = [];
+                        }
+
+                    } catch (e) {
+                        console.error('Error parsing data JSON:', e);
+                        this.allStudenten = [];
+                        this.allGroepen = [];
                     }
-                } catch (error) {
-                    console.error('Fout bij markeren als gestopt:', error);
-                    alert('Er trad een fout op bij het verwerken van het verzoek.');
                 }
-            }
-        },
-        // Alpine.js state voor de logboek modal
-        showLogbookModal: false,
-        logbookStudents: [], // Deze wordt geladen via openLogbook
-        logbookLoading: false,
-        logbookError: '',
+            }))
+        })
+    </script>
 
-        // Functie om logboek data op te halen en modal te tonen
-        openLogbook: async function() {
-            this.showLogbookModal = true;
-            this.logbookLoading = true;
-            this.logbookError = '';
+    {{-- Main x-data div calling the defined component data --}}
+    <div x-data="docentDashboardData" class="flex flex-col gap-6">
 
-            try {
-                // Haal alle studenten op via de nieuwe route
-                const response = await fetch('/docent/students/all');
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                const data = await response.json();
-                // Zorg ervoor dat de geladen data ook percentage en status heeft
-                this.logbookStudents = data.map(student => {
-                     // Ensure numeric conversion for calculations if necessary
-                     const rooster = parseInt(student.rooster);
-                     const aanwezigheid = parseInt(student.aanwezigheid);
-
-                    student.percentage = rooster > 0 ? Math.round((aanwezigheid / rooster) * 100) : 0;
-                    student.status = rooster === 0 ? 'Gestopt' : (student.percentage < 50 ? 'Risico' : 'Actief');
-                    // Voeg hier weer 'laatste_week' met 'N/A' toe, net als in de controller
-                    student.laatste_week = 'N/A';
-                    return student;
-                });
-
-            } catch (error) {
-                console.error('Fout bij ophalen logboek data:', error);
-                this.logbookError = 'Kon logboek data niet ophalen.';
-            } finally {
-                this.logbookLoading = false;
-            }
-        },
-        // Functie om logboek modal te sluiten
-        closeLogbook: function() {
-            this.showLogbookModal = false;
-            this.logbookStudents = []; // Opschonen bij sluiten
-            this.logbookError = '';
-        },
-        // Alpine.js state voor de navigatietabs
-        tab: 'overzicht', // Default tab is Overzicht
-
-        // Initialisatie logica
-        init() {
-             console.log('Alpine.js initialized with', this.allStudenten.length, 'students for the main list.');
-        }
-
-    }" class="flex flex-col gap-6">
-        
         {{-- BELANGRIJK: Alle inhoud die Alpine.js state gebruikt, moet hier binnen staan --}}
 
         <div class="bg-white shadow-md rounded-lg p-6">
             <h2 class="text-2xl font-semibold text-gray-800 mb-2">Groepsoverzicht Aanwezigheid</h2>
 
-            {{-- Groepsrapportage Download Knop --}}
-            @if(isset($groepen[0]['naam']))
+            {{-- Groepsrapportage Download Knop - tijdelijk uitgeschakeld tot PDF functionaliteit is geïmplementeerd --}}
+            {{-- @if(isset($groepen[0]['naam']))
                 <a href="{{ route('rapportage.groep.pdf', $groepen[0]['naam']) }}"
                    class="inline-block bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md transition-colors mb-4">
                     Groepsrapportage Downloaden
                 </a>
-            @endif
+            @endif --}}
 
             {{-- Logboek Knop --}}
             <button @click="openLogbook()"
