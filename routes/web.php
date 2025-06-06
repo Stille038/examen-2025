@@ -6,15 +6,14 @@ use App\Http\Controllers\ExcelUploadController;
 use App\Http\Controllers\CustomLoginController;
 use App\Http\Controllers\AanwezigheidController;
 
+
 // ➤ Login functionaliteit
 Route::post('/custom-login', [CustomLoginController::class, 'login'])->name('custom.login');
 Route::redirect('/', '/login');
 
-// ➤ Student dashboard (data via controller, NIET via closure)
 Route::get('/student-dashboard', [AanwezigheidController::class, 'index'])->name('student-dashboard');
+Route::get('/individueel-student', [AanwezigheidController::class, 'individueel'])->name('individueel-student');
 
-// ➤ Individueel studentenscherm (alleen als je iets extra's wilt)
-Route::view('/individueel-student', 'individueel-student')->name('individueel-student');
 
 // ➤ Aanwezighedenoverzicht voor docenten
 Route::get('/aanwezigheden', [AanwezigheidController::class, 'index'])->name('aanwezigheden.index');
@@ -41,3 +40,5 @@ Route::post('/docent/student/{studentnummer}/stop', [AanwezigheidController::cla
 Route::get('/docent/students/all', [AanwezigheidController::class, 'getAllStudentData'])->name('docent.students.all');
 
 require __DIR__ . '/auth.php';
+
+
