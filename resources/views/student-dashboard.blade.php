@@ -53,7 +53,7 @@
                     <div class="flex flex-col">
                         <x-input-label for="jaar" value="Jaar" />
                         <x-select id="jaar" name="jaar" class="p-2 border rounded-md w-full">
-                            @foreach ([2024, 2025] as $jaar)
+                            @foreach ([2024] as $jaar)
                             <option value="{{ $jaar }}" {{ (old('jaar', $filters['jaar'] ?? '') == $jaar) ? 'selected' : '' }}>
                                 {{ $jaar }}
                             </option>

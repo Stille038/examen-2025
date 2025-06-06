@@ -15,6 +15,19 @@ class AanwezigheidController extends Controller
             return redirect('/login')->with('error', 'Je bent niet ingelogd.');
         }
 
+        //  Als er niks is ingevuld in de URL (dus geen filters), vul dan standaard de huidige periode in
+        if (!$request->has(['van_week', 'tot_week', 'jaar'])) {
+            $huidigJaar = date('Y');
+            $huidigeWeek = date('W');
+
+            // Laat standaard de laatste 4 weken van het huidige jaar zien
+            $request->merge([
+                'van_week' => 1,
+                'tot_week' => 52,
+                'jaar' => date('Y'),
+            ]);
+        }
+
         //  info uit front-end komt hier heen 
         $filters = [
             'van_week' => (int) $request->input('van_week', 1),
