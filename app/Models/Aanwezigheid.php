@@ -9,6 +9,7 @@ class Aanwezigheid extends Model
 
     protected $fillable = [
         'studentnummer',
+        'groep',
         'aanwezigheid',
         'rooster',
         'week',

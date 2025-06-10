@@ -128,10 +128,14 @@ class AanwezigheidController extends Controller
             return $record->categorie === 'Kritiek';
         });
 
+        $studentRecord = $records->first();
+        $groep = $studentRecord ? $studentRecord->groep : 'Onbekend';
+
         // Terugsturen naar de blade
         return view('individueel-student', [
             'studentnummer' => $studentnummer,
             'student' => $records->first(),
+            'groep' => $groep,
             'aanwezigheidPerWeek' => $aanwezigheidPerWeek,
             'gemiddelde' => round($gemiddelde),
             'weken_boven_80' => $weken_boven_80,

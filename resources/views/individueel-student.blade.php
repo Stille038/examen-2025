@@ -30,7 +30,7 @@
             <!-- Student Info -->
             <div class="bg-white rounded-xl shadow mt-4 p-6">
                 <h2 class="text-xl font-semibold mb-1">Individueel Student Overzicht</h2>
-                <p class="text-gray-600 mb-4">Student: {{ $studentnummer }} | Groep: {{ $filters['jaar'] ?? '...' }}</p>
+                <p class="text-gray-600 mb-4">Student: {{ $studentnummer }} | Groep: {{ $groep }}  </p>
 
                 <!-- Statistieken -->
                 <div class="grid grid-cols md:grid-cols-6 gap-4 text-center mb-6">
