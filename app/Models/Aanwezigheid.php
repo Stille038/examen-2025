@@ -17,44 +17,41 @@ class Aanwezigheid extends Model
         'categorie',
         'kleur',
     ];
-
    
     public static function boot()
     {
         parent::boot();
 
         static::saving(function ($aanwezigheid) {
-            // Vermijd deling door 0
             if ($aanwezigheid->rooster > 0) {
                 $percentage = ($aanwezigheid->aanwezigheid / $aanwezigheid->rooster) * 100;
             } else {
                 $percentage = 0;
             }
 
-            $aanwezigheid->percentage = round($percentage, 2);
+            $aanwezigheid->percentage = round($percentage, 0);
 
-            // categorie & kleur
-            if ($percentage >= 100) {
+            if ($aanwezigheid->percentage >= 100) {
                 $aanwezigheid->categorie = 'Perfect';
-                $aanwezigheid->kleur = 'paars';
-            } elseif ($percentage >= 95) {
+                $aanwezigheid->kleur = 'purple';
+            } elseif ($aanwezigheid->percentage >= 95) {
                 $aanwezigheid->categorie = 'Excellent';
-                $aanwezigheid->kleur = 'blauw';
-            } elseif ($percentage >= 80) {
+                $aanwezigheid->kleur = 'blue';
+            } elseif ($aanwezigheid->percentage >= 80) {
                 $aanwezigheid->categorie = 'Goed';
-                $aanwezigheid->kleur = 'groen';
-            } elseif ($percentage >= 65) {
+                $aanwezigheid->kleur = 'green';
+            } elseif ($aanwezigheid->percentage >= 65) {
                 $aanwezigheid->categorie = 'Redelijk';
-                $aanwezigheid->kleur = 'geel';
-            } elseif ($percentage >= 50) {
+                $aanwezigheid->kleur = 'yellow';
+            } elseif ($aanwezigheid->percentage >= 50) {
                 $aanwezigheid->categorie = 'Onvoldoende';
-                $aanwezigheid->kleur = 'oranje';
-            } elseif ($percentage >= 0) {
+                $aanwezigheid->kleur = 'orange';
+            } elseif ($aanwezigheid->percentage > 0 && $aanwezigheid->percentage < 50) {
                 $aanwezigheid->categorie = 'Kritiek';
-                $aanwezigheid->kleur = 'rood';
+                $aanwezigheid->kleur = 'red';
             } else {
                 $aanwezigheid->categorie = 'fail';
-                $aanwezigheid->kleur = 'donkerrood';
+                $aanwezigheid->kleur = 'gray';
             }
         });
     }

@@ -48,7 +48,6 @@ class ReportController extends Controller
 
             $pdf->setPaper('a4');
             return $pdf->download("groepsrapportage-{$groepnaam}.pdf");
-
         } catch (\Exception $e) {
             Log::error('Fout bij genereren groepsrapportage: ' . $e->getMessage());
             return response()->json(['error' => 'Kon groepsrapportage niet genereren: ' . $e->getMessage()], 500);
@@ -74,10 +73,9 @@ class ReportController extends Controller
             }
 
             // Bereken percentage en status
-            $percentage = $studentData->rooster > 0 ? 
+            $percentage = $studentData->rooster > 0 ?
                 round(($studentData->aanwezigheid / $studentData->rooster) * 100) : 0;
-            $status = $studentData->rooster == 0 ? 'Gestopt' : 
-                ($percentage < 50 ? 'Risico' : 'Actief');
+            $status = $studentData->rooster == 0 ? 'Gestopt' : ($percentage < 50 ? 'Risico' : 'Actief');
 
             // Voeg berekende waarden toe aan het student object
             $studentData->percentage = $percentage;
@@ -93,7 +91,6 @@ class ReportController extends Controller
 
             // Download de PDF
             return $pdf->download('studentrapportage_' . $studentnummer . '_' . date('Ymd') . '.pdf');
-
         } catch (\Exception $e) {
             Log::error('Fout bij genereren PDF studentrapportage: ' . $e->getMessage(), [
                 'studentnummer' => $studentnummer,
@@ -102,4 +99,57 @@ class ReportController extends Controller
             return response('Kon studentrapportage niet genereren: ' . $e->getMessage(), 500);
         }
     }
-} 
+    public function downloadEigenStudentReport($studentnummer) //student pdf 
+    {
+        // Filters op weken
+        $filters = [
+            'jaar' => request('jaar', 2024),
+            'van_week' => request('van_week', 1),
+            'tot_week' => request('tot_week', 52),
+        ];
+
+
+        // Haal de juiste filter resulateten op 
+        $records = Aanwezigheid::where('studentnummer', $studentnummer)
+            ->where('jaar', $filters['jaar'])
+            ->whereBetween('week', [$filters['van_week'], $filters['tot_week']])
+            ->get();
+
+        if ($records->isEmpty()) {
+            return response('Geen data gevonden voor student: ' . $studentnummer, 404);
+        }
+
+        // Eerste record als basis voor info (zoals naam, studentnummer etc. first maakt object van en geen array dus kan aangeroepen worden)
+        $student = $records->first();
+
+        // aanwezigheid berekenen
+        $gemiddelde = round($records->avg(function ($r) { // avg maakt gemiddelde van gefilterde gegevens 
+            return $r->rooster > 0 ? ($r->aanwezigheid / $r->rooster) * 100 : 0;
+        }));
+
+        $totaalRooster = $records->sum('rooster');
+        $totaalAanwezig = $records->sum('aanwezigheid');
+
+        $wekenBoven80 = $records->filter(function ($r) {
+            return $r->rooster > 0 && ($r->aanwezigheid / $r->rooster) * 100 > 80;
+        })->count();
+
+        $wekenOnder50 = $records->filter(function ($r) {
+            return $r->rooster > 0 && ($r->aanwezigheid / $r->rooster) * 100 < 50;
+        })->count();
+
+        // PDF genereren
+        $pdf = PDF::loadView('pdf.student_dashboard', [
+            'student' => $student,
+            'filters' => $filters,
+            'gemiddelde' => $gemiddelde,
+            'totaal_weken' => $records->count(),
+            'weken_boven_80' => $wekenBoven80,
+            'weken_onder_50' => $wekenOnder50,
+            'rooster' => $totaalRooster,
+            'aanwezig' => $totaalAanwezig,
+        ]);
+
+        return $pdf->download('eigen_studentrapport_' . $studentnummer . '.pdf');
+    }
+}

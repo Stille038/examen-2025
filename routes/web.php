@@ -11,14 +11,17 @@ use App\Http\Controllers\ReportController;
 Route::post('/custom-login', [CustomLoginController::class, 'login'])->name('custom.login');
 Route::redirect('/', '/login');
 
+//als ingelogd op studenten-dashboard voer aanwezigheidmethode uit
 Route::get('/student-dashboard', [AanwezigheidController::class, 'index'])->name('student-dashboard');
 Route::get('/individueel-student', [AanwezigheidController::class, 'individueel'])->name('individueel-student');
 
 // ➤ Aanwezighedenoverzicht voor docenten
 Route::get('/aanwezigheden', [AanwezigheidController::class, 'index'])->name('aanwezigheden.index');
 
-// ➤ Individuele student (bijv. vanuit docent-interface)
-Route::get('/student/{studentnummer}', [AanwezigheidController::class, 'show'])->name('student.show');
+// ➤ Individuele student
+Route::get('/individueel-student/{studentnummer?}', [AanwezigheidController::class, 'individueel']);
+
+Route::post('/student/{studentnummer}/stop', [AanwezigheidController::class, 'stopStudying']);
 
 // ➤ Overige pagina's
 Route::view('/importing', 'importing')->name('importing');
@@ -43,5 +46,8 @@ Route::get('/docent/rapportage/student/{studentnummer}/pdf', [ReportController::
 
 // ➤ Route voor het downloaden van groep PDF rapporten
 Route::get('/docent/rapportage/groep/{groepnaam}/pdf', [ReportController::class, 'downloadGroupReportPdf'])->name('docent.groep.pdf');
+//  Route voor het downloaden van student PDF rapporten
+Route::get('/student/rapportage/{studentnummer}/pdf', [ReportController::class, 'downloadEigenStudentReport'])->name('student.rapport.pdf');
+
 
 require __DIR__ . '/auth.php';

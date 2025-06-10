@@ -37,22 +37,40 @@
                         // Filteren op status (actief, risico, gestopt) gebaseerd op de navigatietabs
                         const matchesStatusTab = () => {
                             switch (this.tab) {
-                                case 'overzicht': return true;
-                                case 'risico': return student.status === 'Risico';
-                                case 'top': return student.status === 'Actief' && studentPercentage > 80;
-                                case 'gestopt': return student.status === 'Gestopt';
-                                default: return true;
+                                case 'overzicht':
+                                    return true;
+                                case 'risico':
+                                    return student.status === 'Risico';
+                                case 'top':
+                                    return student.status === 'Actief' && studentPercentage > 80;
+                                case 'gestopt':
+                                    return student.status === 'Gestopt';
+                                default:
+                                    return true;
                             }
                         };
 
                         switch (this.selectedFilterOp) {
-                            case '0-20%': matchesFilterOp = studentPercentage >= 0 && studentPercentage <= 20; break;
-                            case '20-50%': matchesFilterOp = studentPercentage > 20 && studentPercentage <= 50; break;
-                            case '50-80%': matchesFilterOp = studentPercentage > 50 && studentPercentage <= 80; break;
-                            case '> 80%': matchesFilterOp = studentPercentage > 80; break;
-                            case '< 50%': matchesFilterOp = studentPercentage < 50; break;
-                            case 'Alle studenten': matchesFilterOp = true; break;
-                            default: matchesFilterOp = true;
+                            case '0-20%':
+                                matchesFilterOp = studentPercentage >= 0 && studentPercentage <= 20;
+                                break;
+                            case '20-50%':
+                                matchesFilterOp = studentPercentage > 20 && studentPercentage <= 50;
+                                break;
+                            case '50-80%':
+                                matchesFilterOp = studentPercentage > 50 && studentPercentage <= 80;
+                                break;
+                            case '> 80%':
+                                matchesFilterOp = studentPercentage > 80;
+                                break;
+                            case '< 50%':
+                                matchesFilterOp = studentPercentage < 50;
+                                break;
+                            case 'Alle studenten':
+                                matchesFilterOp = true;
+                                break;
+                            default:
+                                matchesFilterOp = true;
                         }
 
                         const zoekTerm = this.zoekStudentTerm.toLowerCase();
@@ -83,7 +101,9 @@
 
                                 const studentIndex = this.allStudenten.findIndex(s => s.studentnummer === studentnummer);
                                 if (studentIndex !== -1) {
-                                    const updatedStudent = { ...this.allStudenten[studentIndex] };
+                                    const updatedStudent = {
+                                        ...this.allStudenten[studentIndex]
+                                    };
                                     updatedStudent.rooster = 0;
                                     updatedStudent.percentage = 0;
                                     updatedStudent.status = 'Gestopt';
@@ -175,7 +195,7 @@
 
             {{-- Logboek Knop --}}
             <button @click="openLogbook()"
-                    class="inline-block bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md transition-colors mb-4">
+                class="inline-block bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md transition-colors mb-4">
                 Logboek Studenten
             </button>
 
@@ -196,7 +216,7 @@
                     <select x-model="selectedGroep" id="groep_select" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border border-primary focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">
                         <option value="All">Alle Groepen</option>
                         @foreach($groepen as $groep)
-                            <option value="{{ $groep['naam'] }}">{{ $groep['naam'] }}</option>
+                        <option value="{{ $groep['naam'] }}">{{ $groep['naam'] }}</option>
                         @endforeach
                     </select>
                 </div>
@@ -223,7 +243,8 @@
                         <option value="20-50%">20-50%</option>
                         <option value="50-80%">50-80%</option>
                         <option value="> 80%">> 80%</option>
-                        <option value="< 50%">< 50%</option>
+                        <option value="< 50%">
+                            < 50%</option>
                     </select>
                 </div>
 
@@ -272,7 +293,9 @@
                         <template x-for="student in filteredStudenten" :key="student.studentnummer">
                             <tr>
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="text-sm font-medium text-gray-900" x-text="student.naam ?? student.studentnummer"></div>
+                                    <a :href="`/individueel-student/${student.studentnummer}`" class="text-blue-600 hover:underline">
+                                        <div class="text-sm font-medium text-gray-900" x-text="student.naam ?? student.studentnummer"></div>
+                                    </a>
                                     <div class="text-sm text-gray-500" x-text="student.studentnummer"></div>
                                 </td>
                                 {{-- Toon Groep --}}
@@ -301,20 +324,20 @@
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                     {{-- Download PDF Icon --}}
                                     <a :href="'/docent/rapportage/student/' + student.studentnummer + '/pdf'"
-                                       class="text-blue-600 hover:text-blue-900 inline-flex items-center justify-center w-5 h-5" title="Download PDF">
+                                        class="text-blue-600 hover:text-blue-900 inline-flex items-center justify-center w-5 h-5" title="Download PDF">
                                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
                                             <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0-4.5-4.5m4.5 4.5V3" />
                                         </svg>
                                     </a>
-                                    
+
                                     {{-- Stop Studeren Icon --}}
                                     {{-- Toon de knop alleen als de student niet gestopt is --}}
                                     <template x-if="student.status !== 'Gestopt'">
                                         <button @click="stopStudying(student.studentnummer)"
-                                                class="ml-2 text-red-600 hover:text-red-900 focus:outline-none inline-flex items-center justify-center w-5 h-5" title="Student markeren als gestopt">
+                                            class="ml-2 text-red-600 hover:text-red-900 focus:outline-none inline-flex items-center justify-center w-5 h-5" title="Student markeren als gestopt">
                                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
                                                 <path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l9.17 9.17a1.5 1.5 0 0 1-2.12 2.12L12 11.88l-9.17 9.17a1.5 1.5 0 0 1-2.12-2.12L9.88 10l-9.17-9.17A1.5 1.5 0 0 1 3.81 6.88L12 15l9.17-9.17a1.5 1.5 0 0 1 2.12 2.12L14.74 9z" />
-                                              </svg>
+                                            </svg>
                                         </button>
                                     </template>
                                 </td>
@@ -340,19 +363,19 @@
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
                         @foreach($groepen as $groep)
-                            <tr>
-                                <td class="px-6 py-4 whitespace-nowrap">{{ $groep['naam'] }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap">{{ $groep['gemiddelde'] }}%</td>
-                                <td class="px-6 py-4 whitespace-nowrap">{{ $groep['aantal'] }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                    <a href="/docent/rapportage/groep/{{ urlencode($groep['naam']) }}/pdf"
-                                       class="text-blue-600 hover:text-blue-900 inline-flex items-center justify-center w-5 h-5" title="Download Groepsrapportage">
-                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0-4.5-4.5m4.5 4.5V3" />
-                                        </svg>
-                                    </a>
-                                </td>
-                            </tr>
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap">{{ $groep['naam'] }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap">{{ $groep['gemiddelde'] }}%</td>
+                            <td class="px-6 py-4 whitespace-nowrap">{{ $groep['aantal'] }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                <a href="/docent/rapportage/groep/{{ urlencode($groep['naam']) }}/pdf"
+                                    class="text-blue-600 hover:text-blue-900 inline-flex items-center justify-center w-5 h-5" title="Download Groepsrapportage">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0-4.5-4.5m4.5 4.5V3" />
+                                    </svg>
+                                </a>
+                            </td>
+                        </tr>
                         @endforeach
                     </tbody>
                 </table>
@@ -361,23 +384,23 @@
 
         {{-- Logboek Modal - Zorg dat deze binnen de x-data div staat --}}
         <div x-cloak x-show="showLogbookModal"
-             x-transition:enter="ease-out duration-300"
-             x-transition:enter-start="opacity-0"
-             x-transition:enter-end="opacity-100"
-             x-transition:leave="ease-in duration-200"
-             x-transition:leave-start="opacity-100"
-             x-transition:leave-end="opacity-0"
-             class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50"
-             @click.away="closeLogbook()" {{-- Sluit modal bij klikken buiten de modal --}}
-             @keydown.escape.window="closeLogbook()" {{-- Sluit modal bij drukken op ESC --}} >
+            x-transition:enter="ease-out duration-300"
+            x-transition:enter-start="opacity-0"
+            x-transition:enter-end="opacity-100"
+            x-transition:leave="ease-in duration-200"
+            x-transition:leave-start="opacity-100"
+            x-transition:leave-end="opacity-0"
+            class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50"
+            @click.away="closeLogbook()" {{-- Sluit modal bij klikken buiten de modal --}}
+            @keydown.escape.window="closeLogbook()" {{-- Sluit modal bij drukken op ESC --}}>
 
             <div class="relative top-10 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-2/3 shadow-lg rounded-md bg-white"
-                 @click.stop {{-- Voorkom dat klikken in de modal de modal sluit --}} >
+                @click.stop {{-- Voorkom dat klikken in de modal de modal sluit --}}>
 
                 <!-- Modal header -->
                 <div class="flex justify-between items-center pb-3">
                     <h3 class="text-2xl font-bold text-gray-900">Logboek Alle Studenten
-                         {{-- Toon hier de datum/tijd van openen --}}
+                        {{-- Toon hier de datum/tijd van openen --}}
                         {{-- Verwijder de datum/tijd weergave --}}
                         {{-- <span x-show="logbookOpenTime" class="text-base font-normal text-gray-600">
                             (Opgehaald op: <span x-text="logbookOpenTime"></span>)
@@ -385,7 +408,7 @@
                     </h3>
                     <button @click="closeLogbook()" class="text-gray-400 hover:text-gray-600 focus:outline-none">
                         <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                         </svg>
                     </button>
                 </div>
@@ -454,8 +477,8 @@
         const groepenData = @json($groepen);
         window.groepenNamen = groepenData.map(g => g.naam);
 
-         // Hulpfunctie voor round beschikbaar maken in Alpine.js indien nodig
-         // window.round = (value) => Math.round(value); // Reeds gedefinieerd in x-data
+        // Hulpfunctie voor round beschikbaar maken in Alpine.js indien nodig
+        // window.round = (value) => Math.round(value); // Reeds gedefinieerd in x-data
     });
 </script>
 @endpush

@@ -33,9 +33,9 @@
                         <x-select id="van_week" name="van_week" class="p-2 border rounded-md w-full" onchange="this.form.submit()">
                             @for ($i = 1; $i <= 52; $i++)
                                 <option value="{{ $i }}" {{ (old('van_week', $filters['van_week'] ?? '') == $i) ? 'selected' : '' }}>
-                                Week {{ $i }}
+                                    Week {{ $i }}
                                 </option>
-                                @endfor
+                            @endfor
                         </x-select>
                     </div>
 
@@ -44,27 +44,29 @@
                         <x-select id="tot_week" name="tot_week" class="p-2 border rounded-md w-full" onchange="this.form.submit()">
                             @for ($i = 1; $i <= 52; $i++)
                                 <option value="{{ $i }}" {{ (old('tot_week', $filters['tot_week'] ?? '') == $i) ? 'selected' : '' }}>
-                                Week {{ $i }}
+                                    Week {{ $i }}
                                 </option>
-                                @endfor
+                            @endfor
                         </x-select>
                     </div>
 
                     <div class="flex flex-col">
                         <x-input-label for="jaar" value="Jaar" />
                         <x-select id="jaar" name="jaar" class="p-2 border rounded-md w-full" onchange="this.form.submit()">
+                            <option value="" {{ (old('jaar', $filters['jaar'] ?? '') === null || old('jaar', $filters['jaar'] ?? '') === '') ? 'selected' : '' }}>Alle jaren</option>
                             @foreach ([2024, 2025] as $jaar)
-                            <option value="{{ $jaar }}" {{ (old('jaar', $filters['jaar'] ?? '') == $jaar) ? 'selected' : '' }}>
-                                {{ $jaar }}
-                            </option>
+                                <option value="{{ $jaar }}" {{ (old('jaar', $filters['jaar'] ?? '') == $jaar) ? 'selected' : '' }}>
+                                    {{ $jaar }}
+                                </option>
                             @endforeach
                         </x-select>
                     </div>
                 </div>
             </form>
 
+
             <!-- Statistieken -->
-            <div class="grid grid-cols md:grid-cols-4 gap-4 text-center mb-6">
+            <div class="grid grid-cols md:grid-cols-6 gap-4 text-center mb-6">
                 @php
                 $borderColor = match (true) {
                 $gemiddelde == 100 => 'border-purple-600 text-purple-600',
@@ -92,25 +94,29 @@
                     <p class="text-3xl font-bold text-gray-800">{{ $totaal_weken ?? '-' }}</p>
                     <p class="text-sm text-gray-600">Totaal weken</p>
                 </div>
+                <div class="bg-white rounded-lg shadow p-4 border border-purple-200">
+                    <p class="text-3xl font-bold text-purple-800">{{ $student->rooster }}</p>
+                    <p class="text-sm text-gray-600">Totaal rooster minuten</p>
+                </div>
+                <div class="bg-white rounded-lg shadow p-4 border border-pink-200">
+                    <p class="text-3xl font-bold text-pink-800">{{ $student->aanwezigheid }}</p>
+                    <p class="text-sm text-gray-600">Totaal aanwezig minuten</p>
+                </div>
             </div>
+
+            <!--  als je als student onder de categorie 'kritiek' valt krijg je deze melding te zien -->
+            @if($heeftKritiek)
+            <div class="bg-yellow-100 text-yellow-800 p-4 rounded mb-6 border-l-4 border-yellow-500">
+                <p><strong>⚠️ Aandachtspunt:</strong> Je hebt de afgelopen {{ $filters['tot_week'] - $filters['van_week'] + 1 }} weken een gemiddelde aanwezigheid van slechts {{ $gemiddelde ?? '-' }}%. Gesprek aanbevolen.</p>
+            </div>
+            @endif
 
             <!-- Aanwezigheid per week -->
             <h3 class="text-xl font-semibold mt-8 mb-4">Aanwezigheid per week</h3>
             <div class="flex flex-wrap gap-3 fade-in">
-                @foreach ($aanwezigheidPerWeek as $week => $percentage)
-                @php
-                $bgColor = match (true) {
-                $percentage == 100 => 'bg-purple-600',
-                $percentage >= 95 => 'bg-blue-500',
-                $percentage >= 80 => 'bg-green-500',
-                $percentage >= 65 => 'bg-yellow-400',
-                $percentage >= 50 => 'bg-orange-400',
-                $percentage > 0 => 'bg-red-500',
-                default => 'bg-red-800',
-                };
-                @endphp
-                <div class="{{ $bgColor }} text-white px-10 py-8 rounded-md shadow transform transition-transform duration-200 hover:scale-105">
-                    {{ $percentage }}%<br><span class="text-xs">W{{ $week }}</span>
+                @foreach ($aanwezigheidPerWeek as $aanwezigheid)
+                <div class="bg-{{ $aanwezigheid->kleur }}-500 text-white px-10 py-8 rounded-md shadow shadow transform transition-transform duration-300 hover:scale-105">
+                    {{ round($aanwezigheid->percentage) }}%<br><span class="text-xs">W{{ $aanwezigheid->week }}</span><br>
                 </div>
                 @endforeach
             </div>
@@ -133,13 +139,17 @@
                     <div class="w-4 h-4 bg-orange-400 rounded"></div> Onvoldoende (50–64%)
                 </div>
                 <div class="flex items-center gap-1">
-                    <div class="w-4 h-4 bg-red-500 rounded"></div> Slecht (1–49%)
+                    <div class="w-4 h-4 bg-red-500 rounded"></div> Kritiek (1–49%)
                 </div>
                 <div class="flex items-center gap-1">
-                    <div class="w-4 h-4 bg-red-800 rounded"></div> Afwezig (0%)
+                    <div class="w-4 h-4 bg-gray-500 rounded"></div> Fail (0%)
                 </div>
+                <a href="{{ url('/student/rapportage/'.$studentnummer.'/pdf') }}?van_week={{ request('van_week') }}&tot_week={{ request('tot_week') }}&jaar={{ request('jaar') }}"
+                    class="text-blue-600 hover:text-blue-900 inline-flex items-center justify-center w-auto h-5"
+                    title="Download PDF">
+                    <button class="border border-yellow-500 h-10 uppercase w-auto px-2">Download PDF</button> <!-- gegevens worden door gestruurd naar web.php -->
+                </a>
             </div>
-
         </div>
     </div>
 </div>
@@ -162,7 +172,7 @@
         sections.forEach(section => observer.observe(section));
 
 
-        if (!window.location.search) {
+        if (!window.location.search) { // on reload pagina gelijk data door sturen zodat student gelijk data krijgt te zien
             document.querySelector('form').submit();
         }
     });
