@@ -6,15 +6,10 @@ use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvi
 
 class EventServiceProvider extends ServiceProvider
 {
-    protected $listen = [
-        // Example: 'App\Events\SomeEvent' => [
-        //     'App\Listeners\SomeListener',
-        // ],
-    ];
+    protected $listen = [];
 
     public function boot(): void
     {
         //
     }
 }
-

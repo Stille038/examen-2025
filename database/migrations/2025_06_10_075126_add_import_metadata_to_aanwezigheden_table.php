@@ -1,4 +1,4 @@
-<?php
+<?PHP
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
@@ -8,18 +8,16 @@ return new class extends Migration {
     public function up(): void
     {
         Schema::table('aanwezigheden', function (Blueprint $table) {
-            // ⬅️ Bump the size of percentage to handle values like 1008.82
-            $table->decimal('percentage', 7, 2)->nullable();
-            $table->string('categorie')->nullable();
-            $table->string('kleur')->nullable();
+            $table->string('import_filename')->nullable()->after('kleur');
+            $table->foreignId('import_log_id')->nullable()->constrained('import_logs')->nullOnDelete()->after('import_filename');
         });
     }
 
     public function down(): void
     {
         Schema::table('aanwezigheden', function (Blueprint $table) {
-            $table->dropColumn(['percentage', 'categorie', 'kleur']);
+            $table->dropForeign(['import_log_id']);
+            $table->dropColumn(['import_filename', 'import_log_id']);
         });
     }
 };
-

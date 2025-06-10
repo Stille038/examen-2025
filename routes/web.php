@@ -49,5 +49,7 @@ Route::get('/docent/rapportage/groep/{groepnaam}/pdf', [ReportController::class,
 //  Route voor het downloaden van student PDF rapporten
 Route::get('/student/rapportage/{studentnummer}/pdf', [ReportController::class, 'downloadEigenStudentReport'])->name('student.rapport.pdf');
 
+Route::get('/importing', [ExcelUploadController::class, 'showImportForm'])->name('importing');
+
 
 require __DIR__ . '/auth.php';
